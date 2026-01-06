@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import logo from 'figma:asset/b0156df81bf0597ec03084c78325b8634e5c8780.png';
+import logo from '@/assets/b0156df81bf0597ec03084c78325b8634e5c8780.png';
 
 export function Footer() {
   const scrollToSection = (id: string) => {
