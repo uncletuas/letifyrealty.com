@@ -24,7 +24,7 @@ git add .
 git commit -m "Initial commit - Letify Realty website"
 
 # Add your remote repository
-git remote add origin https://github.com/YOUR-USERNAME/letifyrealty.git
+git remote add origin https://github.com/uncletuas/letifyrealty.com.git
 
 # Push to GitHub
 git push -u origin main

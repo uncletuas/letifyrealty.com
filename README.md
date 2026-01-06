@@ -26,7 +26,7 @@ A premium real estate website for Letify Realty with a professional aesthetic, b
 
 ```bash
 # Clone the repository
-git clone https://github.com/[your-username]/letifyrealty.git
+git clone https://github.com/uncletuas/letifyrealty.com.git
 
 # Install dependencies
 npm install
