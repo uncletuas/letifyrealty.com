@@ -1,0 +1,30 @@
+LETIFY REALTY - ADMIN ACCESS INFORMATION
+=========================================
+
+CMS Admin Panel URL:
+https://[your-domain]/admin-cms-letify-realty-2026
+
+Alternative Access Method:
+Press Ctrl+Shift+C (or Cmd+Shift+C on Mac) while on the website
+
+IMPORTANT NOTES:
+- This URL is for authorized personnel only
+- Do not share this URL publicly
+- Use this URL to access the property management system
+- You can add, edit, and delete property listings through this panel
+- All form submissions are automatically sent to info@letifyrealty.com via Resend API
+
+Contact Information Updated:
+- Phone: +234 906 743 5048
+- WhatsApp: +234 906 743 5048
+- Address: 25 Kpalukwu Street, D-line, Port Harcourt, Rivers State, Nigeria
+- Business Hours: Monday - Friday, 9:00 AM - 5:00 PM
+
+Features:
+✓ Up to 5 images per property (optional)
+✓ Email notifications via Resend for all inquiries
+✓ Property filtering and search
+✓ Individual property detail pages
+✓ Contact forms on all pages
+
+Last Updated: January 6, 2026
