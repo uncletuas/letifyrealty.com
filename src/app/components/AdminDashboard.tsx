@@ -40,6 +40,40 @@ interface ServiceRequest {
   email: string;
 }
 
+interface InspectionRequest {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyType: string;
+  name: string;
+  email: string;
+  phone: string;
+  preferredDate: string;
+  preferredTime?: string;
+  notes?: string;
+  status: string;
+  confirmedDate?: string;
+  confirmedTime?: string;
+  createdAt: string;
+}
+
+interface ConsultationRequest {
+  id: string;
+  propertyId?: string;
+  propertyTitle?: string;
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time?: string;
+  topic?: string;
+  notes?: string;
+  status: string;
+  confirmedDate?: string;
+  confirmedTime?: string;
+  createdAt: string;
+}
+
 interface AdminMessage {
   id: string;
   userId: string;
@@ -70,10 +104,12 @@ interface UserItem {
 }
 
 export function AdminDashboard({ onClose, accessToken, children }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'properties' | 'clients' | 'messages' | 'notifications' | 'mailing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'properties' | 'clients' | 'inspections' | 'consultations' | 'messages' | 'notifications' | 'mailing'>('overview');
   const [contactInquiries, setContactInquiries] = useState<ContactInquiry[]>([]);
   const [propertyInquiries, setPropertyInquiries] = useState<PropertyInquiry[]>([]);
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [inspections, setInspections] = useState<InspectionRequest[]>([]);
+  const [consultations, setConsultations] = useState<ConsultationRequest[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [mailingLists, setMailingLists] = useState<MailingList[]>([]);
@@ -83,6 +119,8 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const [mailingForm, setMailingForm] = useState({ name: '', category: 'property', interests: [] as string[] });
   const [mailingSend, setMailingSend] = useState({ listId: '', subject: '', body: '' });
   const [mailingStatus, setMailingStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [inspectionUpdates, setInspectionUpdates] = useState<Record<string, { status: string; confirmedDate: string; confirmedTime: string }>>({});
+  const [consultationUpdates, setConsultationUpdates] = useState<Record<string, { status: string; confirmedDate: string; confirmedTime: string }>>({});
 
   useEffect(() => {
     fetchAdminData();
@@ -93,6 +131,8 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
       fetchContactInquiries(),
       fetchPropertyInquiries(),
       fetchServiceRequests(),
+      fetchInspections(),
+      fetchConsultations(),
       fetchMessages(),
       fetchNotifications(),
       fetchMailingLists(),
@@ -142,6 +182,36 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
+    }
+  };
+
+  const fetchInspections = async () => {
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/inspections/all`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const data = await response.json();
+      if (response.ok && data.inspections) {
+        setInspections(data.inspections);
+      }
+    } catch (error) {
+      console.error('Error fetching inspections:', error);
+    }
+  };
+
+  const fetchConsultations = async () => {
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/consultations/all`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const data = await response.json();
+      if (response.ok && data.consultations) {
+        setConsultations(data.consultations);
+      }
+    } catch (error) {
+      console.error('Error fetching consultations:', error);
     }
   };
 
@@ -235,7 +305,71 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
       message: `${item.requestType} | ${item.serviceType} | ${item.propertyType} | ${item.message}`,
       createdAt: item.createdAt,
     })),
-  ]), [contactInquiries, propertyInquiries, serviceRequests]);
+    ...inspections.map((item) => ({
+      source: 'Inspection Booking',
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      message: `${item.propertyTitle || item.propertyId} | ${item.preferredDate} ${item.preferredTime || ''} | ${item.status}`,
+      createdAt: item.createdAt,
+    })),
+    ...consultations.map((item) => ({
+      source: 'Consultation Request',
+      name: item.name,
+      email: item.email,
+      phone: item.phone,
+      message: `${item.topic || 'Consultation'} | ${item.date} ${item.time || ''} | ${item.status}`,
+      createdAt: item.createdAt,
+    })),
+  ]), [contactInquiries, propertyInquiries, serviceRequests, inspections, consultations]);
+
+  const handleUpdateInspection = async (id: string) => {
+    const update = inspectionUpdates[id];
+    if (!update) return;
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/inspections/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(update),
+        }
+      );
+      const data = await response.json();
+      if (response.ok && data.success) {
+        fetchInspections();
+      }
+    } catch (error) {
+      console.error('Error updating inspection:', error);
+    }
+  };
+
+  const handleUpdateConsultation = async (id: string) => {
+    const update = consultationUpdates[id];
+    if (!update) return;
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/consultations/${id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(update),
+        }
+      );
+      const data = await response.json();
+      if (response.ok && data.success) {
+        fetchConsultations();
+      }
+    } catch (error) {
+      console.error('Error updating consultation:', error);
+    }
+  };
 
   const handleDownloadCsv = () => {
     const rows = clientRows;
@@ -368,9 +502,11 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     contacts: contactInquiries.length,
     propertyInquiries: propertyInquiries.length,
     serviceRequests: serviceRequests.length,
+    inspections: inspections.length,
+    consultations: consultations.length,
     messages: messages.length,
     users: users.length,
-  }), [contactInquiries, propertyInquiries, serviceRequests, messages, users]);
+  }), [contactInquiries, propertyInquiries, serviceRequests, inspections, consultations, messages, users]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -396,11 +532,13 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
           {[
             { label: 'Contacts', value: stats.contacts },
             { label: 'Property Inquiries', value: stats.propertyInquiries },
             { label: 'Service Requests', value: stats.serviceRequests },
+            { label: 'Inspections', value: stats.inspections },
+            { label: 'Consultations', value: stats.consultations },
             { label: 'Messages', value: stats.messages },
             { label: 'Users', value: stats.users },
           ].map((item) => (
@@ -416,6 +554,8 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
             { id: 'overview', label: 'Overview', icon: Settings },
             { id: 'properties', label: 'Properties', icon: Settings },
             { id: 'clients', label: 'Clients', icon: Download },
+            { id: 'inspections', label: 'Inspections', icon: Settings },
+            { id: 'consultations', label: 'Consultations', icon: Settings },
             { id: 'messages', label: 'Messages', icon: MessageCircle },
             { id: 'notifications', label: 'Notifications', icon: Bell },
             { id: 'mailing', label: 'Mailing Lists', icon: Mail },
@@ -560,6 +700,174 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'inspections' && (
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <h2 className="text-xl mb-4" style={{ fontWeight: 700 }}>Inspection Bookings</h2>
+            <div className="space-y-4">
+              {inspections.length === 0 ? (
+                <div className="text-sm text-foreground/60">No inspection bookings yet.</div>
+              ) : (
+                inspections.map((item) => {
+                  const current = inspectionUpdates[item.id] || {
+                    status: item.status || 'pending',
+                    confirmedDate: item.confirmedDate || '',
+                    confirmedTime: item.confirmedTime || '',
+                  };
+                  return (
+                    <div key={item.id} className="border border-border rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between text-xs text-foreground/60">
+                        <span>{new Date(item.createdAt).toLocaleString()}</span>
+                        <span className="uppercase">{item.status}</span>
+                      </div>
+                      <div className="text-sm" style={{ fontWeight: 600 }}>
+                        {item.propertyTitle || item.propertyId}
+                      </div>
+                      <div className="text-sm text-foreground/70">
+                        {item.name} • {item.email} • {item.phone}
+                      </div>
+                      <div className="text-sm text-foreground/70">
+                        Preferred: {item.preferredDate} {item.preferredTime || ''}
+                      </div>
+                      {item.notes && (
+                        <div className="text-xs text-foreground/60 whitespace-pre-line">{item.notes}</div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <select
+                          value={current.status}
+                          onChange={(e) =>
+                            setInspectionUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, status: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="declined">Declined</option>
+                        </select>
+                        <input
+                          type="date"
+                          value={current.confirmedDate}
+                          onChange={(e) =>
+                            setInspectionUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, confirmedDate: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        />
+                        <input
+                          type="time"
+                          value={current.confirmedTime}
+                          onChange={(e) =>
+                            setInspectionUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, confirmedTime: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleUpdateInspection(item.id)}
+                        className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-white text-sm"
+                      >
+                        Save Update
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'consultations' && (
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <h2 className="text-xl mb-4" style={{ fontWeight: 700 }}>Consultation Requests</h2>
+            <div className="space-y-4">
+              {consultations.length === 0 ? (
+                <div className="text-sm text-foreground/60">No consultation requests yet.</div>
+              ) : (
+                consultations.map((item) => {
+                  const current = consultationUpdates[item.id] || {
+                    status: item.status || 'pending',
+                    confirmedDate: item.confirmedDate || '',
+                    confirmedTime: item.confirmedTime || '',
+                  };
+                  return (
+                    <div key={item.id} className="border border-border rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between text-xs text-foreground/60">
+                        <span>{new Date(item.createdAt).toLocaleString()}</span>
+                        <span className="uppercase">{item.status}</span>
+                      </div>
+                      <div className="text-sm" style={{ fontWeight: 600 }}>
+                        {item.topic || 'Consultation'}
+                      </div>
+                      <div className="text-sm text-foreground/70">
+                        {item.name} • {item.email} • {item.phone}
+                      </div>
+                      <div className="text-sm text-foreground/70">
+                        Preferred: {item.date} {item.time || ''}
+                      </div>
+                      {item.notes && (
+                        <div className="text-xs text-foreground/60 whitespace-pre-line">{item.notes}</div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <select
+                          value={current.status}
+                          onChange={(e) =>
+                            setConsultationUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, status: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="declined">Declined</option>
+                        </select>
+                        <input
+                          type="date"
+                          value={current.confirmedDate}
+                          onChange={(e) =>
+                            setConsultationUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, confirmedDate: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        />
+                        <input
+                          type="time"
+                          value={current.confirmedTime}
+                          onChange={(e) =>
+                            setConsultationUpdates((prev) => ({
+                              ...prev,
+                              [item.id]: { ...current, confirmedTime: e.target.value },
+                            }))
+                          }
+                          className="w-full px-3 py-2 bg-input-background border border-border rounded-lg text-sm"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleUpdateConsultation(item.id)}
+                        className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-white text-sm"
+                      >
+                        Save Update
+                      </button>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}

@@ -22,6 +22,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -33,6 +34,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
       if (mode === 'sign-in') {
@@ -87,29 +89,24 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
                 }),
               }
             );
+            await supabase.auth.signOut();
           }
-          onSuccess?.();
+          setSuccessMessage('Account created successfully! Please sign in with your email and password.');
+          setMode('sign-in');
+          setFormData({
+            email: formData.email,
+            password: '',
+            fullName: '',
+            gender: '',
+            age: '',
+            address: '',
+          });
         }
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
       console.error(err);
     } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setIsSubmitting(true);
-    setError(null);
-    const redirectTo = `${window.location.origin}/`;
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo },
-    });
-
-    if (oauthError) {
-      setError(oauthError.message);
       setIsSubmitting(false);
     }
   };
@@ -234,6 +231,11 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
                 {error}
               </div>
             )}
+            {successMessage && (
+              <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-600">
+                {successMessage}
+              </div>
+            )}
 
             <motion.button
               type="submit"
@@ -251,13 +253,6 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           </form>
 
           <div className="mt-6 space-y-3">
-            <button
-              onClick={handleGoogle}
-              disabled={isSubmitting}
-              className="w-full border border-border rounded-lg py-3 text-sm hover:border-primary/60 transition-colors"
-            >
-              Continue with Google
-            </button>
             <button
               onClick={() => setMode(mode === 'sign-in' ? 'sign-up' : 'sign-in')}
               className="w-full text-sm text-primary hover:text-accent transition-colors"

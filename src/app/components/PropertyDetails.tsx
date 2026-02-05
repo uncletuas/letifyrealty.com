@@ -54,6 +54,27 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   const [reservationData, setReservationData] = useState(reservationDefaults);
   const [isReservationSubmitting, setIsReservationSubmitting] = useState(false);
   const [reservationStatus, setReservationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const inspectionDefaults = {
+    name: '',
+    email: '',
+    phone: '',
+    preferredDate: '',
+    preferredTime: '',
+    notes: '',
+  };
+  const [inspectionData, setInspectionData] = useState(inspectionDefaults);
+  const [inspectionStatus, setInspectionStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const consultationDefaults = {
+    name: '',
+    email: '',
+    phone: '',
+    date: '',
+    time: '',
+    topic: 'Property Consultation',
+    notes: '',
+  };
+  const [consultationData, setConsultationData] = useState(consultationDefaults);
+  const [consultationStatus, setConsultationStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   useEffect(() => {
     fetchProperty();
@@ -217,6 +238,31 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        await fetch(
+          `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/reservations`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${publicAnonKey}`,
+            },
+            body: JSON.stringify({
+              propertyId,
+              propertyTitle: property.title,
+              propertyType: property.type,
+              name: reservationData.name,
+              email: reservationData.email,
+              phone: reservationData.phone,
+              checkIn: reservationData.checkIn,
+              checkOut: reservationData.checkOut,
+              moveIn: reservationData.moveIn,
+              guests: reservationData.guests,
+              leaseTerm: reservationData.leaseTerm,
+              notes: reservationData.notes,
+              paymentMethod: reservationData.paymentMethod,
+            }),
+          }
+        );
         setReservationStatus('success');
         if (session?.access_token) {
           await fetch(
@@ -249,6 +295,86 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
       setReservationStatus('error');
     } finally {
       setIsReservationSubmitting(false);
+    }
+  };
+
+  const handleInspectionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!property) return;
+    setInspectionStatus('sending');
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/inspections`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({
+            propertyId,
+            propertyTitle: property.title,
+            propertyType: property.type,
+            name: inspectionData.name,
+            email: inspectionData.email,
+            phone: inspectionData.phone,
+            preferredDate: inspectionData.preferredDate,
+            preferredTime: inspectionData.preferredTime,
+            notes: inspectionData.notes,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setInspectionStatus('sent');
+        setInspectionData(inspectionDefaults);
+        setTimeout(() => setInspectionStatus('idle'), 4000);
+      } else {
+        setInspectionStatus('error');
+      }
+    } catch (error) {
+      console.error('Error booking inspection:', error);
+      setInspectionStatus('error');
+    }
+  };
+
+  const handleConsultationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!property) return;
+    setConsultationStatus('sending');
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/consultations`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({
+            propertyId,
+            propertyTitle: property.title,
+            name: consultationData.name,
+            email: consultationData.email,
+            phone: consultationData.phone,
+            date: consultationData.date,
+            time: consultationData.time,
+            topic: consultationData.topic,
+            notes: consultationData.notes,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setConsultationStatus('sent');
+        setConsultationData(consultationDefaults);
+        setTimeout(() => setConsultationStatus('idle'), 4000);
+      } else {
+        setConsultationStatus('error');
+      }
+    } catch (error) {
+      console.error('Error requesting consultation:', error);
+      setConsultationStatus('error');
     }
   };
 
@@ -689,6 +815,204 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                   </form>
                 </motion.div>
               )}
+
+              <motion.div
+                className="bg-card border border-border rounded-xl p-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <h3 className="mb-6" style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                  Book an Inspection
+                </h3>
+                <form onSubmit={handleInspectionSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-2 text-sm text-foreground/80">Preferred Date</label>
+                      <input
+                        type="date"
+                        value={inspectionData.preferredDate}
+                        onChange={(e) => setInspectionData({ ...inspectionData, preferredDate: e.target.value })}
+                        required
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-2 text-sm text-foreground/80">Preferred Time</label>
+                      <input
+                        type="time"
+                        value={inspectionData.preferredTime}
+                        onChange={(e) => setInspectionData({ ...inspectionData, preferredTime: e.target.value })}
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
+                    <input
+                      type="text"
+                      value={inspectionData.name}
+                      onChange={(e) => setInspectionData({ ...inspectionData, name: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Email</label>
+                    <input
+                      type="email"
+                      value={inspectionData.email}
+                      onChange={(e) => setInspectionData({ ...inspectionData, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Phone</label>
+                    <input
+                      type="tel"
+                      value={inspectionData.phone}
+                      onChange={(e) => setInspectionData({ ...inspectionData, phone: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="+234 800 000 0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Notes (Optional)</label>
+                    <textarea
+                      value={inspectionData.notes}
+                      onChange={(e) => setInspectionData({ ...inspectionData, notes: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none text-sm"
+                      placeholder="Any scheduling preferences?"
+                    />
+                  </div>
+                  <motion.button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Book Inspection
+                  </motion.button>
+                  {inspectionStatus === 'sent' && (
+                    <div className="bg-green-500/10 border border-green-500/50 text-green-500 px-4 py-3 rounded-lg text-center text-sm">
+                      Inspection request received. We will confirm the date shortly.
+                    </div>
+                  )}
+                  {inspectionStatus === 'error' && (
+                    <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-lg text-center text-sm">
+                      Unable to submit your inspection request.
+                    </div>
+                  )}
+                </form>
+              </motion.div>
+
+              <motion.div
+                className="bg-card border border-border rounded-xl p-6"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h3 className="mb-6" style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                  Request a Consultation
+                </h3>
+                <form onSubmit={handleConsultationSubmit} className="space-y-4">
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Preferred Date</label>
+                    <input
+                      type="date"
+                      value={consultationData.date}
+                      onChange={(e) => setConsultationData({ ...consultationData, date: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Preferred Time</label>
+                    <input
+                      type="time"
+                      value={consultationData.time}
+                      onChange={(e) => setConsultationData({ ...consultationData, time: e.target.value })}
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Consultation Topic</label>
+                    <input
+                      type="text"
+                      value={consultationData.topic}
+                      onChange={(e) => setConsultationData({ ...consultationData, topic: e.target.value })}
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="Investment guidance, property search, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
+                    <input
+                      type="text"
+                      value={consultationData.name}
+                      onChange={(e) => setConsultationData({ ...consultationData, name: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Email</label>
+                    <input
+                      type="email"
+                      value={consultationData.email}
+                      onChange={(e) => setConsultationData({ ...consultationData, email: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Phone</label>
+                    <input
+                      type="tel"
+                      value={consultationData.phone}
+                      onChange={(e) => setConsultationData({ ...consultationData, phone: e.target.value })}
+                      required
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      placeholder="+234 800 000 0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-2 text-sm text-foreground/80">Notes (Optional)</label>
+                    <textarea
+                      value={consultationData.notes}
+                      onChange={(e) => setConsultationData({ ...consultationData, notes: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none text-sm"
+                      placeholder="What would you like to discuss?"
+                    />
+                  </div>
+                  <motion.button
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary/20"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Request Consultation
+                  </motion.button>
+                  {consultationStatus === 'sent' && (
+                    <div className="bg-green-500/10 border border-green-500/50 text-green-500 px-4 py-3 rounded-lg text-center text-sm">
+                      Consultation request received. We will confirm the time shortly.
+                    </div>
+                  )}
+                  {consultationStatus === 'error' && (
+                    <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-lg text-center text-sm">
+                      Unable to submit your consultation request.
+                    </div>
+                  )}
+                </form>
+              </motion.div>
 
               {/* Contact Card */}
               <motion.div

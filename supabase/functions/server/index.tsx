@@ -445,6 +445,7 @@ app.post("/make-server-ef402f1d/profiles", async (c) => {
     if (ageValue !== null && (Number.isNaN(ageValue) || ageValue < 18)) {
       return c.json({ error: "You must be 18 or older to register." }, 400);
     }
+    const existingProfile = await kv.get(`profile_${user.id}`);
     const profile = {
       userId: user.id,
       email: user.email,
@@ -458,6 +459,19 @@ app.post("/make-server-ef402f1d/profiles", async (c) => {
       updatedAt: new Date().toISOString(),
     };
     await kv.set(`profile_${user.id}`, profile);
+
+    if (!existingProfile && user.email) {
+      await sendEmail(
+        user.email,
+        "Welcome to Letifi Realty",
+        `
+          <h2>Welcome to Letifi Realty</h2>
+          <p>Hello ${profile.fullName || "there"},</p>
+          <p>Your account has been created successfully. You can now sign in anytime to manage your profile, requests, and reservations.</p>
+          <p>We are excited to support your real estate journey.</p>
+        `,
+      );
+    }
     return c.json({ success: true, profile });
   } catch (error) {
     console.error('Error saving profile:', error);
@@ -509,6 +523,381 @@ app.post("/make-server-ef402f1d/requests", async (c) => {
   } catch (error) {
     console.error('Error creating request:', error);
     return c.json({ error: 'Failed to submit request' }, 500);
+  }
+});
+
+// Reservation requests
+app.post("/make-server-ef402f1d/reservations", async (c) => {
+  try {
+    const body = await c.req.json();
+    const {
+      propertyId,
+      propertyTitle,
+      propertyType,
+      name,
+      email,
+      phone,
+      checkIn,
+      checkOut,
+      moveIn,
+      guests,
+      leaseTerm,
+      notes,
+      paymentMethod,
+    } = body;
+
+    if (!propertyId || !name || !email || !phone) {
+      return c.json({ error: "propertyId, name, email, and phone are required" }, 400);
+    }
+
+    const reservationId = `reservation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const reservation = {
+      id: reservationId,
+      propertyId,
+      propertyTitle: propertyTitle || '',
+      propertyType: propertyType || '',
+      name,
+      email,
+      phone,
+      checkIn: checkIn || '',
+      checkOut: checkOut || '',
+      moveIn: moveIn || '',
+      guests: guests || 1,
+      leaseTerm: leaseTerm || '',
+      notes: notes || '',
+      paymentMethod: paymentMethod || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    await kv.set(reservationId, reservation);
+    await createAdminNotification(
+      "New Reservation",
+      `${name} reserved ${reservation.propertyTitle || 'a property'}.`,
+    );
+
+    await sendEmail(
+      email,
+      "Reservation Received - Letifi Realty",
+      `
+        <h2>Reservation Received</h2>
+        <p>Hello ${name},</p>
+        <p>We have received your reservation request for ${reservation.propertyTitle || 'your selected property'}.</p>
+        <p><strong>Property Type:</strong> ${reservation.propertyType || 'N/A'}</p>
+        <p><strong>Check-in:</strong> ${reservation.checkIn || 'N/A'}</p>
+        <p><strong>Check-out:</strong> ${reservation.checkOut || 'N/A'}</p>
+        <p><strong>Move-in:</strong> ${reservation.moveIn || 'N/A'}</p>
+        <p><strong>Guests:</strong> ${reservation.guests || 'N/A'}</p>
+        <p><strong>Payment Method:</strong> ${reservation.paymentMethod || 'N/A'}</p>
+        ${reservation.notes ? `<p><strong>Notes:</strong> ${reservation.notes}</p>` : ''}
+        <p>We will reach out shortly with next steps.</p>
+      `,
+    );
+
+    await sendEmail(
+      Array.from(ADMIN_EMAILS),
+      "New Reservation Request",
+      `
+        <h2>New Reservation Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Property:</strong> ${reservation.propertyTitle || propertyId}</p>
+        <p><strong>Type:</strong> ${reservation.propertyType || 'N/A'}</p>
+        <p><strong>Check-in:</strong> ${reservation.checkIn || 'N/A'}</p>
+        <p><strong>Check-out:</strong> ${reservation.checkOut || 'N/A'}</p>
+        <p><strong>Move-in:</strong> ${reservation.moveIn || 'N/A'}</p>
+        <p><strong>Guests:</strong> ${reservation.guests || 'N/A'}</p>
+        <p><strong>Payment Method:</strong> ${reservation.paymentMethod || 'N/A'}</p>
+        ${reservation.notes ? `<p><strong>Notes:</strong> ${reservation.notes}</p>` : ''}
+      `,
+    );
+
+    return c.json({ success: true, reservationId });
+  } catch (error) {
+    console.error('Error creating reservation:', error);
+    return c.json({ error: 'Failed to submit reservation' }, 500);
+  }
+});
+
+app.get("/make-server-ef402f1d/reservations/all", async (c) => {
+  try {
+    const { errorResponse } = await requireAdmin(c);
+    if (errorResponse) return errorResponse;
+    const reservations = await kv.getByPrefix('reservation_');
+    return c.json({ reservations });
+  } catch (error) {
+    console.error('Error fetching reservations:', error);
+    return c.json({ error: 'Failed to fetch reservations' }, 500);
+  }
+});
+
+// Inspection booking
+app.post("/make-server-ef402f1d/inspections", async (c) => {
+  try {
+    const body = await c.req.json();
+    const {
+      propertyId,
+      propertyTitle,
+      propertyType,
+      name,
+      email,
+      phone,
+      preferredDate,
+      preferredTime,
+      notes,
+    } = body;
+
+    if (!propertyId || !name || !email || !phone || !preferredDate) {
+      return c.json({ error: "propertyId, name, email, phone, and preferredDate are required" }, 400);
+    }
+
+    const inspectionId = `inspection_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const inspection = {
+      id: inspectionId,
+      propertyId,
+      propertyTitle: propertyTitle || '',
+      propertyType: propertyType || '',
+      name,
+      email,
+      phone,
+      preferredDate,
+      preferredTime: preferredTime || '',
+      notes: notes || '',
+      status: 'pending',
+      confirmedDate: '',
+      confirmedTime: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await kv.set(inspectionId, inspection);
+    await createAdminNotification(
+      "New Inspection Booking",
+      `${name} requested an inspection for ${inspection.propertyTitle || 'a property'}.`,
+    );
+
+    await sendEmail(
+      email,
+      "Inspection Booking Received - Letifi Realty",
+      `
+        <h2>Inspection Booking Received</h2>
+        <p>Hello ${name},</p>
+        <p>We have received your inspection request for ${inspection.propertyTitle || 'your selected property'}.</p>
+        <p><strong>Preferred Date:</strong> ${preferredDate}</p>
+        <p><strong>Preferred Time:</strong> ${preferredTime || 'N/A'}</p>
+        ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+        <p>We will confirm your inspection date shortly.</p>
+      `,
+    );
+
+    await sendEmail(
+      Array.from(ADMIN_EMAILS),
+      "New Inspection Request",
+      `
+        <h2>New Inspection Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Property:</strong> ${inspection.propertyTitle || propertyId}</p>
+        <p><strong>Preferred Date:</strong> ${preferredDate}</p>
+        <p><strong>Preferred Time:</strong> ${preferredTime || 'N/A'}</p>
+        ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+      `,
+    );
+
+    return c.json({ success: true, inspectionId });
+  } catch (error) {
+    console.error('Error creating inspection:', error);
+    return c.json({ error: 'Failed to submit inspection' }, 500);
+  }
+});
+
+app.get("/make-server-ef402f1d/inspections/all", async (c) => {
+  try {
+    const { errorResponse } = await requireAdmin(c);
+    if (errorResponse) return errorResponse;
+    const inspections = await kv.getByPrefix('inspection_');
+    return c.json({ inspections });
+  } catch (error) {
+    console.error('Error fetching inspections:', error);
+    return c.json({ error: 'Failed to fetch inspections' }, 500);
+  }
+});
+
+app.put("/make-server-ef402f1d/inspections/:id", async (c) => {
+  try {
+    const { errorResponse } = await requireAdmin(c);
+    if (errorResponse) return errorResponse;
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const existing = await kv.get(id);
+    if (!existing) {
+      return c.json({ error: 'Inspection not found' }, 404);
+    }
+
+    const updated = {
+      ...existing,
+      status: body.status || existing.status,
+      confirmedDate: body.confirmedDate || existing.confirmedDate,
+      confirmedTime: body.confirmedTime || existing.confirmedTime,
+      updatedAt: new Date().toISOString(),
+    };
+    await kv.set(id, updated);
+
+    await sendEmail(
+      updated.email,
+      "Inspection Update - Letifi Realty",
+      `
+        <h2>Inspection Update</h2>
+        <p>Hello ${updated.name},</p>
+        <p>Your inspection request for ${updated.propertyTitle || 'your selected property'} has been updated.</p>
+        <p><strong>Status:</strong> ${updated.status}</p>
+        <p><strong>Confirmed Date:</strong> ${updated.confirmedDate || 'Pending'}</p>
+        <p><strong>Confirmed Time:</strong> ${updated.confirmedTime || 'Pending'}</p>
+        <p>Thank you for choosing Letifi Realty.</p>
+      `,
+    );
+
+    return c.json({ success: true, inspection: updated });
+  } catch (error) {
+    console.error('Error updating inspection:', error);
+    return c.json({ error: 'Failed to update inspection' }, 500);
+  }
+});
+
+// Consultation requests
+app.post("/make-server-ef402f1d/consultations", async (c) => {
+  try {
+    const body = await c.req.json();
+    const {
+      propertyId,
+      propertyTitle,
+      name,
+      email,
+      phone,
+      date,
+      time,
+      topic,
+      notes,
+    } = body;
+
+    if (!name || !email || !phone || !date) {
+      return c.json({ error: "name, email, phone, and date are required" }, 400);
+    }
+
+    const consultationId = `consultation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const consultation = {
+      id: consultationId,
+      propertyId: propertyId || '',
+      propertyTitle: propertyTitle || '',
+      name,
+      email,
+      phone,
+      date,
+      time: time || '',
+      topic: topic || 'Consultation',
+      notes: notes || '',
+      status: 'pending',
+      confirmedDate: '',
+      confirmedTime: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await kv.set(consultationId, consultation);
+    await createAdminNotification(
+      "New Consultation Request",
+      `${name} requested a consultation.`,
+    );
+
+    await sendEmail(
+      email,
+      "Consultation Request Received - Letifi Realty",
+      `
+        <h2>Consultation Request Received</h2>
+        <p>Hello ${name},</p>
+        <p>We have received your consultation request.</p>
+        <p><strong>Date:</strong> ${date}</p>
+        <p><strong>Time:</strong> ${time || 'N/A'}</p>
+        <p><strong>Topic:</strong> ${topic || 'Consultation'}</p>
+        ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+        <p>We will confirm your consultation shortly.</p>
+      `,
+    );
+
+    await sendEmail(
+      Array.from(ADMIN_EMAILS),
+      "New Consultation Request",
+      `
+        <h2>New Consultation Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Date:</strong> ${date}</p>
+        <p><strong>Time:</strong> ${time || 'N/A'}</p>
+        <p><strong>Topic:</strong> ${topic || 'Consultation'}</p>
+        ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+      `,
+    );
+
+    return c.json({ success: true, consultationId });
+  } catch (error) {
+    console.error('Error creating consultation:', error);
+    return c.json({ error: 'Failed to submit consultation' }, 500);
+  }
+});
+
+app.get("/make-server-ef402f1d/consultations/all", async (c) => {
+  try {
+    const { errorResponse } = await requireAdmin(c);
+    if (errorResponse) return errorResponse;
+    const consultations = await kv.getByPrefix('consultation_');
+    return c.json({ consultations });
+  } catch (error) {
+    console.error('Error fetching consultations:', error);
+    return c.json({ error: 'Failed to fetch consultations' }, 500);
+  }
+});
+
+app.put("/make-server-ef402f1d/consultations/:id", async (c) => {
+  try {
+    const { errorResponse } = await requireAdmin(c);
+    if (errorResponse) return errorResponse;
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const existing = await kv.get(id);
+    if (!existing) {
+      return c.json({ error: 'Consultation not found' }, 404);
+    }
+
+    const updated = {
+      ...existing,
+      status: body.status || existing.status,
+      confirmedDate: body.confirmedDate || existing.confirmedDate,
+      confirmedTime: body.confirmedTime || existing.confirmedTime,
+      updatedAt: new Date().toISOString(),
+    };
+    await kv.set(id, updated);
+
+    await sendEmail(
+      updated.email,
+      "Consultation Update - Letifi Realty",
+      `
+        <h2>Consultation Update</h2>
+        <p>Hello ${updated.name},</p>
+        <p>Your consultation request has been updated.</p>
+        <p><strong>Status:</strong> ${updated.status}</p>
+        <p><strong>Confirmed Date:</strong> ${updated.confirmedDate || 'Pending'}</p>
+        <p><strong>Confirmed Time:</strong> ${updated.confirmedTime || 'Pending'}</p>
+        <p>Thank you for choosing Letifi Realty.</p>
+      `,
+    );
+
+    return c.json({ success: true, consultation: updated });
+  } catch (error) {
+    console.error('Error updating consultation:', error);
+    return c.json({ error: 'Failed to update consultation' }, 500);
   }
 });
 
