@@ -29,6 +29,9 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
   const [loading, setLoading] = useState(true);
   const [editingProperty, setEditingProperty] = useState<Partial<Property> | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [isDragging, setIsDragging] = useState(false);
+  const maxImages = 5;
 
   useEffect(() => {
     fetchProperties();
@@ -135,6 +138,49 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
     setIsFormOpen(true);
   };
 
+  const isRemoteImage = (value: string) => /^https?:\/\//i.test(value);
+
+  const updateImageUrls = (urls: string[]) => {
+    if (!editingProperty) return;
+    const localImages = (editingProperty.images || []).filter((img) => !isRemoteImage(img));
+    const cleanedUrls = urls.map((url) => url.trim()).filter(Boolean);
+    const allowedUrls = cleanedUrls.slice(0, Math.max(0, maxImages - localImages.length));
+    setEditingProperty({ ...editingProperty, images: [...localImages, ...allowedUrls] });
+  };
+
+  const handleImageFiles = async (files: FileList | File[]) => {
+    if (!editingProperty) return;
+    const currentImages = editingProperty.images || [];
+    const availableSlots = maxImages - currentImages.length;
+    if (availableSlots <= 0) return;
+    const list = Array.from(files).filter((file) => file.type.startsWith('image/')).slice(0, availableSlots);
+    const dataUrls = await Promise.all(
+      list.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          })
+      )
+    );
+    setEditingProperty({ ...editingProperty, images: [...currentImages, ...dataUrls] });
+  };
+
+  const handleRemoveImage = (image: string) => {
+    if (!editingProperty) return;
+    const filtered = (editingProperty.images || []).filter((img) => img !== image);
+    setEditingProperty({ ...editingProperty, images: filtered });
+  };
+
+  const visibleProperties = typeFilter === 'all'
+    ? properties
+    : properties.filter((property) => property.type?.toLowerCase() === typeFilter.toLowerCase());
+  const imageUrls = editingProperty?.images?.filter((img) => isRemoteImage(img)) || [];
+  const localImages = editingProperty?.images?.filter((img) => !isRemoteImage(img)) || [];
+  const urlSlots = Math.max(imageUrls.length, Math.max(0, maxImages - localImages.length));
+
   const content = (
     <>
       {/* Add Property Button */}
@@ -150,12 +196,28 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
         </motion.button>
       </div>
 
+      <div className="flex flex-wrap gap-3 mb-8">
+        {['all', 'sale', 'rent', 'airbnb', 'commercial'].map((type) => (
+          <button
+            key={type}
+            onClick={() => setTypeFilter(type)}
+            className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
+              typeFilter === type
+                ? 'bg-gradient-to-r from-primary to-accent text-white border-transparent'
+                : 'border-border text-foreground/70 hover:border-primary/50'
+            }`}
+          >
+            {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
+          </button>
+        ))}
+      </div>
+
       {/* Properties List */}
       {loading ? (
         <div className="text-center text-foreground/70">Loading properties...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {properties.map((property) => (
+          {visibleProperties.map((property) => (
             <div
               key={property.id}
               className="bg-card border border-border rounded-xl p-6"
@@ -271,6 +333,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
                     <option value="Sale">Sale</option>
                     <option value="Rent">Rent</option>
                     <option value="Airbnb">Airbnb</option>
+                    <option value="Commercial">Commercial</option>
                   </select>
                 </div>
               </div>
@@ -320,28 +383,78 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
               </div>
 
               <div>
-                <label className="block mb-2 text-sm">Images (Up to 5 - Optional)</label>
-                <div className="space-y-2">
-                  {[0, 1, 2, 3, 4].map((index) => (
+                <label className="block mb-2 text-sm">Images (Up to 5)</label>
+                <div
+                  className={`rounded-lg border border-dashed p-6 text-center transition-colors ${
+                    isDragging ? 'border-primary bg-primary/5' : 'border-border'
+                  }`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    handleImageFiles(e.dataTransfer.files);
+                  }}
+                >
+                  <input
+                    id="property-images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        handleImageFiles(e.target.files);
+                      }
+                    }}
+                  />
+                  <div className="text-sm text-foreground/70">Drag and drop images here</div>
+                  <label
+                    htmlFor="property-images"
+                    className="inline-flex items-center justify-center mt-3 px-4 py-2 rounded-lg border border-border text-sm hover:border-primary/50 cursor-pointer transition-colors"
+                  >
+                    Upload from device
+                  </label>
+                  <div className="text-xs text-foreground/60 mt-2">JPG, PNG, or WEBP. Max {maxImages} images.</div>
+                </div>
+
+                {(editingProperty.images || []).length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                    {(editingProperty.images || []).map((image) => (
+                      <div key={image} className="relative group overflow-hidden rounded-lg border border-border">
+                        <img src={image} alt="Property" className="h-24 w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(image)}
+                          className="absolute inset-0 bg-black/60 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-2 mt-4">
+                  {Array.from({ length: urlSlots }).map((_, index) => (
                     <input
                       key={index}
                       type="url"
-                      value={editingProperty.images?.[index] || ''}
+                      value={imageUrls[index] || ''}
                       onChange={(e) => {
-                        const newImages = [...(editingProperty.images || [])];
-                        if (e.target.value) {
-                          newImages[index] = e.target.value;
-                        } else {
-                          newImages.splice(index, 1);
-                        }
-                        setEditingProperty({ ...editingProperty, images: newImages.filter(Boolean) });
+                        const nextUrls = [...imageUrls];
+                        nextUrls[index] = e.target.value;
+                        updateImageUrls(nextUrls);
                       }}
                       className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-                      placeholder={`Image ${index + 1} URL (optional)`}
+                      placeholder={`Image URL ${index + 1} (optional)`}
                     />
                   ))}
                 </div>
-                <p className="text-xs text-foreground/60 mt-2">Add up to 5 images for this property. Leave blank if not needed.</p>
+                <p className="text-xs text-foreground/60 mt-2">You can paste image URLs or upload from your device.</p>
               </div>
 
               <div>

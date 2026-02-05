@@ -438,10 +438,20 @@ app.post("/make-server-ef402f1d/profiles", async (c) => {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
     const body = await c.req.json();
+    const ageValue =
+      body.age === undefined || body.age === null || body.age === ""
+        ? null
+        : Number(body.age);
+    if (ageValue !== null && (Number.isNaN(ageValue) || ageValue < 18)) {
+      return c.json({ error: "You must be 18 or older to register." }, 400);
+    }
     const profile = {
       userId: user.id,
       email: user.email,
       fullName: body.fullName || '',
+      gender: body.gender || '',
+      age: ageValue,
+      address: body.address || '',
       phone: body.phone || '',
       location: body.location || '',
       interests: body.interests || { propertyTypes: [], serviceTypes: [] },
@@ -466,6 +476,7 @@ app.post("/make-server-ef402f1d/requests", async (c) => {
       id: requestId,
       userId: user.id,
       email: user.email,
+      propertyId: body.propertyId || '',
       requestType: body.requestType || 'service',
       serviceType: body.serviceType || '',
       propertyType: body.propertyType || '',
@@ -498,6 +509,23 @@ app.post("/make-server-ef402f1d/requests", async (c) => {
   } catch (error) {
     console.error('Error creating request:', error);
     return c.json({ error: 'Failed to submit request' }, 500);
+  }
+});
+
+app.get("/make-server-ef402f1d/requests/me", async (c) => {
+  try {
+    const { user, errorResponse } = await requireAuth(c);
+    if (errorResponse) return errorResponse;
+    const requests = await kv.getByPrefix('request_');
+    const filtered = requests
+      .filter((request: any) => request.userId === user.id)
+      .sort((a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    return c.json({ requests: filtered });
+  } catch (error) {
+    console.error('Error fetching user requests:', error);
+    return c.json({ error: 'Failed to fetch requests' }, 500);
   }
 });
 

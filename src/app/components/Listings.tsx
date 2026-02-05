@@ -229,7 +229,7 @@ export function Listings({ onPropertyClick }: ListingsProps) {
 
           {/* Type Filter */}
           <div className="flex flex-wrap gap-3 justify-center">
-            {['all', 'sale', 'rent', 'airbnb'].map((type) => (
+            {['all', 'sale', 'rent', 'airbnb', 'commercial'].map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}

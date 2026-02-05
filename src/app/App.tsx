@@ -78,8 +78,13 @@ export default function App() {
 
   const handleAccountClick = () => {
     if (session) {
-      setCurrentView('account');
-      window.history.pushState({}, '', '/account');
+      setCurrentView('home');
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+      setTimeout(() => {
+        document.getElementById('member-hub')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
       return;
     }
     setAuthModalOpen(true);
@@ -87,8 +92,12 @@ export default function App() {
 
   const handleAuthSuccess = () => {
     setAuthModalOpen(false);
-    setCurrentView('account');
-    window.history.pushState({}, '', '/account');
+    if (currentView !== 'account') {
+      setCurrentView('home');
+      setTimeout(() => {
+        document.getElementById('member-hub')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
   };
 
   if (currentView === 'property-details' && selectedPropertyId) {
@@ -147,6 +156,9 @@ export default function App() {
         <Hero />
         <About />
         <Services onServiceClick={handleServiceClick} />
+        {session && (
+          <UserDashboard session={session} embedded />
+        )}
         <Listings onPropertyClick={handlePropertyClick} />
         <Contact />
       </main>

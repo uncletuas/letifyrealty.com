@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { supabase } from '../../../utils/supabase/client';
+import { projectId } from '../../../utils/supabase/info';
 
 interface AuthModalProps {
   open: boolean;
@@ -15,6 +16,9 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
     email: '',
     password: '',
     fullName: '',
+    gender: '',
+    age: '',
+    address: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,12 +47,22 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           onSuccess?.();
         }
       } else {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const ageValue = Number(formData.age);
+        if (!formData.gender || !formData.address || !ageValue || Number.isNaN(ageValue) || ageValue < 18) {
+          setError('You must be 18 or older and provide gender and address to sign up.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
             data: {
               full_name: formData.fullName,
+              gender: formData.gender,
+              age: ageValue,
+              address: formData.address,
             },
           },
         });
@@ -56,6 +70,24 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
         if (signUpError) {
           setError(signUpError.message);
         } else {
+          if (data.session?.access_token) {
+            await fetch(
+              `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/profiles`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${data.session.access_token}`,
+                },
+                body: JSON.stringify({
+                  fullName: formData.fullName,
+                  gender: formData.gender,
+                  age: ageValue,
+                  address: formData.address,
+                }),
+              }
+            );
+          }
           onSuccess?.();
         }
       }
@@ -70,7 +102,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   const handleGoogle = async () => {
     setIsSubmitting(true);
     setError(null);
-    const redirectTo = `${window.location.origin}/account`;
+    const redirectTo = `${window.location.origin}/`;
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo },
@@ -115,18 +147,62 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'sign-up' && (
-              <div>
-                <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                  placeholder="Jane Doe"
-                  required
-                />
-              </div>
+              <>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
+                  <input
+                    type="text"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="Jane Doe"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Gender</label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    required
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Age</label>
+                  <input
+                    type="number"
+                    name="age"
+                    min={18}
+                    value={formData.age}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="18"
+                    required
+                  />
+                  <p className="text-xs text-foreground/60 mt-1">Applicants must be 18 or older.</p>
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Address</label>
+                  <input
+                    type="text"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="Street, City, State"
+                    required
+                  />
+                </div>
+              </>
             )}
             <div>
               <label className="block mb-2 text-sm text-foreground/80">Email</label>

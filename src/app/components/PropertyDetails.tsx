@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { motion } from 'motion/react';
 import { X, MapPin, Phone, Mail, MessageCircle, ArrowLeft, Home, Check } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { supabase } from '../../../utils/supabase/client';
 
 interface Property {
   id: string;
@@ -26,6 +28,7 @@ interface PropertyDetailsProps {
 export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
@@ -55,6 +58,24 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   useEffect(() => {
     fetchProperty();
   }, [propertyId]);
+
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) {
+        setSession(data.session);
+      }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
 
   const fetchProperty = async () => {
     try {
@@ -168,6 +189,11 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     e.preventDefault();
     setIsReservationSubmitting(true);
     setReservationStatus('idle');
+    if (!property) {
+      setReservationStatus('error');
+      setIsReservationSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -192,6 +218,26 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
       if (response.ok && data.success) {
         setReservationStatus('success');
+        if (session?.access_token) {
+          await fetch(
+            `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/requests`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({
+                requestType: 'purchase',
+                serviceType: 'Reservation',
+                propertyType: property.type,
+                propertyId,
+                budget: property.price,
+                message: `Reservation for ${property.title}\n${buildReservationMessage(reservationType)}`,
+              }),
+            }
+          );
+        }
         setReservationData(reservationDefaults);
         setTimeout(() => setReservationStatus('idle'), 5000);
       } else {
