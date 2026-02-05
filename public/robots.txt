@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin-cms-letifi-realty-2026
+Disallow: /account
+Disallow: /admin
+Sitemap: https://letifirealty.com/sitemap.xml

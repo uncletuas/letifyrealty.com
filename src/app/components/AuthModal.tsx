@@ -120,7 +120,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
         exit={{ opacity: 0 }}
       >
         <motion.div
-          className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-2xl"
+          className="w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl border border-border bg-card p-8 shadow-2xl"
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.3 }}
