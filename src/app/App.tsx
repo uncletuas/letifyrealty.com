@@ -14,10 +14,12 @@ import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AuthModal } from './components/AuthModal';
 import { UserDashboard } from './components/UserDashboard';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsConditions } from './components/TermsConditions';
 import { supabase } from '../../utils/supabase/client';
 import { ADMIN_EMAILS } from './constants/admin';
 
-type View = 'home' | 'property-details' | 'service-detail' | 'admin' | 'account';
+type View = 'home' | 'property-details' | 'service-detail' | 'admin' | 'account' | 'privacy' | 'terms';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -29,14 +31,26 @@ export default function App() {
   const userEmail = session?.user?.email?.toLowerCase() || null;
   const isAdmin = !!userEmail && ADMIN_EMAILS.includes(userEmail);
 
-  // Check URL for admin access: /admin-cms-letifi-realty-2026 or user account: /account
+  // Check URL for admin access: /admin-cms-letifi-realty-2026, user account: /account, legal pages.
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path === '/admin-cms-letifi-realty-2026') {
-      setCurrentView('admin');
-    } else if (path === '/account') {
-      setCurrentView('account');
-    }
+    const handlePath = () => {
+      const path = window.location.pathname;
+      if (path === '/admin-cms-letifi-realty-2026') {
+        setCurrentView('admin');
+      } else if (path === '/account') {
+        setCurrentView('account');
+      } else if (path === '/privacy') {
+        setCurrentView('privacy');
+      } else if (path === '/terms') {
+        setCurrentView('terms');
+      } else {
+        setCurrentView('home');
+      }
+    };
+
+    handlePath();
+    window.addEventListener('popstate', handlePath);
+    return () => window.removeEventListener('popstate', handlePath);
   }, []);
 
   useEffect(() => {
@@ -88,6 +102,21 @@ export default function App() {
       return;
     }
     setAuthModalOpen(true);
+  };
+
+  const handleLegalNavigate = (target: 'privacy' | 'terms') => {
+    setCurrentView(target);
+    window.history.pushState({}, '', target === 'privacy' ? '/privacy' : '/terms');
+  };
+
+  const handleSectionNavigate = (sectionId: string) => {
+    setCurrentView('home');
+    if (window.location.pathname !== '/') {
+      window.history.pushState({}, '', '/');
+    }
+    setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleAuthSuccess = () => {
@@ -149,6 +178,30 @@ export default function App() {
     );
   }
 
+  if (currentView === 'privacy') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
+        <main>
+          <PrivacyPolicy onBack={handleBack} />
+        </main>
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
+      </div>
+    );
+  }
+
+  if (currentView === 'terms') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
+        <main>
+          <TermsConditions onBack={handleBack} />
+        </main>
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
@@ -162,7 +215,7 @@ export default function App() {
         <Listings onPropertyClick={handlePropertyClick} />
         <Contact />
       </main>
-      <Footer />
+      <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
       <AuthModal
         open={authModalOpen}
         onClose={() => setAuthModalOpen(false)}

@@ -1,14 +1,12 @@
 import { motion } from 'motion/react';
 import logo from '@/assets/b0156df81bf0597ec03084c78325b8634e5c8780.png';
 
-export function Footer() {
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+interface FooterProps {
+  onLegalNavigate: (target: 'privacy' | 'terms') => void;
+  onSectionNavigate: (sectionId: string) => void;
+}
 
+export function Footer({ onLegalNavigate, onSectionNavigate }: FooterProps) {
   const quickLinks = [
     { label: 'Home', id: 'home' },
     { label: 'About', id: 'about' },
@@ -93,7 +91,8 @@ export function Footer() {
               {quickLinks.map((link) => (
                 <li key={link.id}>
                   <button
-                    onClick={() => scrollToSection(link.id)}
+                    type="button"
+                    onClick={() => onSectionNavigate(link.id)}
                     className="text-foreground/70 hover:text-primary transition-colors duration-200"
                   >
                     {link.label}
@@ -144,11 +143,23 @@ export function Footer() {
         <div className="pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-foreground/60 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} Letifi Realty. All rights reserved.
+              &copy; {new Date().getFullYear()} Letifi Realty. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-foreground/60">
-              <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+              <button
+                type="button"
+                onClick={() => onLegalNavigate('privacy')}
+                className="hover:text-primary transition-colors"
+              >
+                Privacy Policy
+              </button>
+              <button
+                type="button"
+                onClick={() => onLegalNavigate('terms')}
+                className="hover:text-primary transition-colors"
+              >
+                Terms &amp; Conditions
+              </button>
             </div>
           </div>
         </div>

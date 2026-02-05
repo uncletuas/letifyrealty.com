@@ -225,6 +225,19 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
                 required
               />
             </div>
+            {mode === 'sign-up' && (
+              <p className="text-xs text-foreground/60">
+                By creating an account, you agree to our{' '}
+                <a href="/terms" className="text-primary hover:text-accent transition-colors">
+                  Terms &amp; Conditions
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" className="text-primary hover:text-accent transition-colors">
+                  Privacy Policy
+                </a>
+                .
+              </p>
+            )}
 
             {error && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-500">
