@@ -41,7 +41,7 @@ export function Footer() {
               className="mb-6"
               whileHover={{ scale: 1.05 }}
             >
-              <img src={logo} alt="Letify Realty" className="h-12 w-auto" />
+              <img src={logo} alt="Letifi Realty" className="h-12 w-auto" />
             </motion.div>
             <p className="text-foreground/70 mb-6 leading-relaxed">
               Smart real estate solutions made simple. Your trusted partner in property sales, leasing, and management.
@@ -129,8 +129,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@letifyrealty.com" className="hover:text-primary transition-colors">
-                  info@letifyrealty.com
+                <a href="mailto:info@letifirealty.com" className="hover:text-primary transition-colors">
+                  info@letifirealty.com
                 </a>
               </li>
               <li>
@@ -144,7 +144,7 @@ export function Footer() {
         <div className="pt-8 border-t border-border">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-foreground/60 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} Letify Realty. All rights reserved.
+              © {new Date().getFullYear()} Letifi Realty. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-foreground/60">
               <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>

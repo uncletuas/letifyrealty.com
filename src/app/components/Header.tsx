@@ -1,9 +1,14 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import logo from '@/assets/b0156df81bf0597ec03084c78325b8634e5c8780.png';
 
-export function Header() {
+interface HeaderProps {
+  onAccountClick?: () => void;
+  isAuthenticated?: boolean;
+}
+
+export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -33,7 +38,7 @@ export function Header() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img src={logo} alt="Letify Realty" className="h-12 w-auto" />
+            <img src={logo} alt="Letifi Realty" className="h-12 w-auto" />
           </motion.button>
 
           {/* Desktop Navigation */}
@@ -47,6 +52,15 @@ export function Header() {
                 {item.label}
               </button>
             ))}
+            <motion.button
+              onClick={onAccountClick}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:border-primary/50 text-foreground/80 hover:text-primary transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <User size={16} />
+              <span className="text-sm">{isAuthenticated ? 'Account' : 'Sign In'}</span>
+            </motion.button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -78,6 +92,13 @@ export function Header() {
                   {item.label}
                 </button>
               ))}
+              <button
+                onClick={onAccountClick}
+                className="flex items-center gap-2 text-foreground/80 hover:text-primary transition-colors duration-200 text-left py-2"
+              >
+                <User size={16} />
+                <span>{isAuthenticated ? 'Account' : 'Sign In'}</span>
+              </button>
             </nav>
           </motion.div>
         )}

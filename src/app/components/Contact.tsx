@@ -66,8 +66,8 @@ export function Contact() {
     {
       icon: Mail,
       label: 'Email',
-      value: 'info@letifyrealty.com',
-      link: 'mailto:info@letifyrealty.com',
+      value: 'info@letifirealty.com',
+      link: 'mailto:info@letifirealty.com',
     },
     {
       icon: MapPin,

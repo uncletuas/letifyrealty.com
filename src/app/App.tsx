@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
@@ -9,32 +10,51 @@ import { Footer } from './components/Footer';
 import { PropertyDetails } from './components/PropertyDetails';
 import { ServiceDetail } from './components/ServiceDetail';
 import { PropertyCMS } from './components/PropertyCMS';
+import { AdminLogin } from './components/AdminLogin';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AuthModal } from './components/AuthModal';
+import { UserDashboard } from './components/UserDashboard';
+import { supabase } from '../../utils/supabase/client';
+import { ADMIN_EMAILS } from './constants/admin';
 
-type View = 'home' | 'property-details' | 'service-detail' | 'cms';
+type View = 'home' | 'property-details' | 'service-detail' | 'admin' | 'account';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<'sales' | 'management' | 'advisory' | 'marketing' | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  // Check URL for admin access: /admin-cms-letify-realty-2026
+  const userEmail = session?.user?.email?.toLowerCase() || null;
+  const isAdmin = !!userEmail && ADMIN_EMAILS.includes(userEmail);
+
+  // Check URL for admin access: /admin-cms-letifi-realty-2026 or user account: /account
   useEffect(() => {
     const path = window.location.pathname;
-    if (path === '/admin-cms-letify-realty-2026') {
-      setCurrentView('cms');
+    if (path === '/admin-cms-letifi-realty-2026') {
+      setCurrentView('admin');
+    } else if (path === '/account') {
+      setCurrentView('account');
     }
   }, []);
 
-  // Access CMS with keyboard shortcut: Ctrl+Shift+C or Cmd+Shift+C
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
-        setCurrentView(prev => prev === 'cms' ? 'home' : 'cms');
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) {
+        setSession(data.session);
       }
-    };
+    });
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   const handlePropertyClick = (propertyId: string) => {
@@ -51,10 +71,24 @@ export default function App() {
     setCurrentView('home');
     setSelectedPropertyId(null);
     setSelectedService(null);
-    // Clear the URL if coming from admin
-    if (window.location.pathname === '/admin-cms-letify-realty-2026') {
+    if (window.location.pathname !== '/') {
       window.history.pushState({}, '', '/');
     }
+  };
+
+  const handleAccountClick = () => {
+    if (session) {
+      setCurrentView('account');
+      window.history.pushState({}, '', '/account');
+      return;
+    }
+    setAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = () => {
+    setAuthModalOpen(false);
+    setCurrentView('account');
+    window.history.pushState({}, '', '/account');
   };
 
   if (currentView === 'property-details' && selectedPropertyId) {
@@ -65,13 +99,50 @@ export default function App() {
     return <ServiceDetail serviceType={selectedService} onClose={handleBack} />;
   }
 
-  if (currentView === 'cms') {
-    return <PropertyCMS onClose={handleBack} />;
+  if (currentView === 'admin') {
+    if (!session || !isAdmin) {
+      return (
+        <AdminLogin
+          onBack={handleBack}
+          onAuthenticated={() => {
+            setCurrentView('admin');
+          }}
+        />
+      );
+    }
+
+    return (
+      <AdminDashboard
+        onClose={handleBack}
+        accessToken={session.access_token}
+      >
+        <PropertyCMS onClose={handleBack} accessToken={session.access_token} embedded />
+      </AdminDashboard>
+    );
+  }
+
+  if (currentView === 'account') {
+    if (!session) {
+      return (
+        <AuthModal
+          open
+          onClose={handleBack}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
+    return (
+      <UserDashboard
+        session={session}
+        onClose={handleBack}
+      />
+    );
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
       <main>
         <Hero />
         <About />
@@ -80,6 +151,11 @@ export default function App() {
         <Contact />
       </main>
       <Footer />
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

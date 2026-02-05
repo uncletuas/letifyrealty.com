@@ -1,4 +1,4 @@
-# Letify Realty - Complete Deployment Guide
+# Letifi Realty - Complete Deployment Guide
 
 ## 🚀 Quick Start - Deploy to Netlify in 5 Minutes
 
@@ -21,10 +21,10 @@ git init
 git add .
 
 # Commit changes
-git commit -m "Initial commit - Letify Realty website"
+git commit -m "Initial commit - Letifi Realty website"
 
 # Add your remote repository
-git remote add origin https://github.com/uncletuas/letifyrealty.com.git
+git remote add origin https://github.com/uncletuas/letifirealty.com.git
 
 # Push to GitHub
 git push -u origin main
@@ -42,7 +42,7 @@ git push -u origin main
 2. Click **"Add new site"** → **"Import an existing project"**
 3. Click **"Deploy with GitHub"**
 4. Authorize Netlify to access your GitHub
-5. Select the **`letifyrealty`** repository
+5. Select the **`letifirealty`** repository
 6. Configure build settings:
    - **Build command:** `npm run build`
    - **Publish directory:** `dist`
@@ -92,15 +92,14 @@ Once deployed, your admin panel will be accessible at:
 
 ### 🔐 Admin URL
 ```
-https://[your-site-name].netlify.app/admin-cms-letify-realty-2026
+https://[your-site-name].netlify.app/admin-cms-letifi-realty-2026
 ```
 
 **Example:**
-- If your Netlify site is `letify-realty-ph.netlify.app`
-- Your admin URL is: `https://letify-realty-ph.netlify.app/admin-cms-letify-realty-2026`
+- If your Netlify site is `letifi-realty-ph.netlify.app`
+- Your admin URL is: `https://letifi-realty-ph.netlify.app/admin-cms-letifi-realty-2026`
 
 ### Alternative Access Methods:
-1. **Keyboard Shortcut:** Press `Ctrl+Shift+C` (Windows/Linux) or `Cmd+Shift+C` (Mac)
 2. **Direct URL:** Bookmark the admin URL above for easy access
 
 ---
@@ -118,13 +117,13 @@ After deployment, test these features:
 
 2. **Contact Forms**
    - [ ] Main contact form submits successfully
-   - [ ] Email is sent to info@letifyrealty.com
+   - [ ] Email is sent to info@letifirealty.com
    - [ ] Phone number shows: +234 906 743 5048
    - [ ] WhatsApp link works
    - [ ] Address shows: 25 Kpalukwu Street, D-line, Port Harcourt
 
 3. **Admin Panel**
-   - [ ] Access via URL: `/admin-cms-letify-realty-2026`
+   - [ ] Access via URL: `/admin-cms-letifi-realty-2026`
    - [ ] Can add new properties
    - [ ] Can upload up to 5 images per property
    - [ ] Can edit existing properties
@@ -156,7 +155,7 @@ After deployment, test these features:
 **Solution:**
 - Verify `RESEND_API_KEY` is set in Supabase Edge Function environment
 - Check Supabase Edge Function logs
-- Verify email address in server code (should be info@letifyrealty.com)
+- Verify email address in server code (should be info@letifirealty.com)
 
 ### Issue: Properties don't save
 **Solution:**
@@ -169,8 +168,8 @@ After deployment, test these features:
 ## 📞 Contact Information
 
 **Website:** https://[your-site].netlify.app  
-**Admin Panel:** https://[your-site].netlify.app/admin-cms-letify-realty-2026  
-**Email:** info@letifyrealty.com  
+**Admin Panel:** https://[your-site].netlify.app/admin-cms-letifi-realty-2026  
+**Email:** info@letifirealty.com  
 **Phone:** +234 906 743 5048  
 **WhatsApp:** +234 906 743 5048  
 **Address:** 25 Kpalukwu Street, D-line, Port Harcourt, Rivers State, Nigeria
@@ -193,7 +192,7 @@ After deployment, test these features:
 
 ## 📝 Important Notes
 
-1. **Keep your admin URL private** - Don't share `/admin-cms-letify-realty-2026` publicly
+1. **Keep your admin URL private** - Don't share `/admin-cms-letifi-realty-2026` publicly
 2. **Bookmark the admin URL** for easy access
 3. **Test email notifications** after first deployment
 4. **Check Resend dashboard** to monitor email delivery

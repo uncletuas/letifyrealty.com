@@ -27,10 +27,10 @@ export function About() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" style={{ fontWeight: 700 }}>
-              About Letify Realty
+              About Letifi Realty
             </h2>
             <p className="text-foreground/80 text-lg mb-6 leading-relaxed">
-              Letify Realty is a modern real estate company committed to revolutionizing the property industry. We believe in providing smart, transparent, and value-driven solutions that put our clients first.
+              Letifi Realty is a modern real estate company committed to revolutionizing the property industry. We believe in providing smart, transparent, and value-driven solutions that put our clients first.
             </p>
             <p className="text-foreground/80 text-lg mb-8 leading-relaxed">
               Our mission is to simplify real estate transactions through innovation, expertise, and unwavering commitment to excellence. Whether you're buying, selling, renting, or managing property, we're here to guide you every step of the way.

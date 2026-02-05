@@ -20,9 +20,11 @@ interface Property {
 
 interface PropertyCMSProps {
   onClose: () => void;
+  accessToken?: string;
+  embedded?: boolean;
 }
 
-export function PropertyCMS({ onClose }: PropertyCMSProps) {
+export function PropertyCMS({ onClose, accessToken, embedded = false }: PropertyCMSProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProperty, setEditingProperty] = useState<Partial<Property> | null>(null);
@@ -38,7 +40,7 @@ export function PropertyCMS({ onClose }: PropertyCMSProps) {
         `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/properties`,
         {
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${accessToken || publicAnonKey}`,
           },
         }
       );
@@ -69,7 +71,7 @@ export function PropertyCMS({ onClose }: PropertyCMSProps) {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
+          'Authorization': `Bearer ${accessToken || publicAnonKey}`,
         },
         body: JSON.stringify(editingProperty),
       });
@@ -98,7 +100,7 @@ export function PropertyCMS({ onClose }: PropertyCMSProps) {
         {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
+            'Authorization': `Bearer ${accessToken || publicAnonKey}`,
           },
         }
       );
@@ -133,73 +135,83 @@ export function PropertyCMS({ onClose }: PropertyCMSProps) {
     setIsFormOpen(true);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <h1 style={{ fontWeight: 600, fontSize: '1.5rem' }}>Property Management CMS</h1>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-card rounded-lg transition-colors"
-            >
-              <X size={24} />
-            </button>
-          </div>
-        </div>
+  const content = (
+    <>
+      {/* Add Property Button */}
+      <div className="mb-8">
+        <motion.button
+          onClick={() => openForm()}
+          className="bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:shadow-lg transition-shadow"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Plus size={20} />
+          <span>Add New Property</span>
+        </motion.button>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Add Property Button */}
-        <div className="mb-8">
-          <motion.button
-            onClick={() => openForm()}
-            className="bg-gradient-to-r from-primary to-accent text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:shadow-lg transition-shadow"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Plus size={20} />
-            <span>Add New Property</span>
-          </motion.button>
-        </div>
-
-        {/* Properties List */}
-        {loading ? (
-          <div className="text-center text-foreground/70">Loading properties...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property) => (
-              <div
-                key={property.id}
-                className="bg-card border border-border rounded-xl p-6"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <h3 style={{ fontWeight: 600 }}>{property.title}</h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openForm(property)}
-                      className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteProperty(property.id)}
-                      className="p-2 hover:bg-red-500/10 rounded-lg text-red-500 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-foreground/70 text-sm mb-2">{property.location}</p>
-                <p className="text-primary" style={{ fontWeight: 600 }}>{property.price}</p>
-                <div className="mt-2 inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-xs">
-                  {property.type}
+      {/* Properties List */}
+      {loading ? (
+        <div className="text-center text-foreground/70">Loading properties...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.map((property) => (
+            <div
+              key={property.id}
+              className="bg-card border border-border rounded-xl p-6"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 style={{ fontWeight: 600 }}>{property.title}</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => openForm(property)}
+                    className="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors"
+                  >
+                    <Edit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProperty(property.id)}
+                    className="p-2 hover:bg-red-500/10 rounded-lg text-red-500 transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
-            ))}
+              <p className="text-foreground/70 text-sm mb-2">{property.location}</p>
+              <p className="text-primary" style={{ fontWeight: 600 }}>{property.price}</p>
+              <div className="mt-2 inline-block bg-primary/10 text-primary px-3 py-1 rounded-full text-xs">
+                {property.type}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={embedded ? '' : 'fixed inset-0 z-50 overflow-y-auto bg-background'}>
+      {!embedded && (
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-md border-b border-border">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <h1 style={{ fontWeight: 600, fontSize: '1.5rem' }}>Property Management CMS</h1>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-card rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
+        </div>
+      )}
+
+      <div className={embedded ? '' : 'container mx-auto px-4 sm:px-6 lg:px-8 py-12'}>
+        {embedded && (
+          <h2 className="text-xl mb-6" style={{ fontWeight: 700 }}>Property Management</h2>
         )}
+        {content}
       </div>
 
       {/* Property Form Modal */}
@@ -258,6 +270,7 @@ export function PropertyCMS({ onClose }: PropertyCMSProps) {
                   >
                     <option value="Sale">Sale</option>
                     <option value="Rent">Rent</option>
+                    <option value="Airbnb">Airbnb</option>
                   </select>
                 </div>
               </div>

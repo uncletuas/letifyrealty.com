@@ -75,7 +75,7 @@ export function Hero() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Experience a new era of real estate with Letify Realty. We deliver transparency, trust, and value in every transaction.
+            Experience a new era of real estate with Letifi Realty. We deliver transparency, trust, and value in every transaction.
           </motion.p>
 
           {/* Action Buttons */}

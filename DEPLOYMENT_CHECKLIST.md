@@ -1,4 +1,4 @@
-# 📋 Letify Realty - Complete Deployment Checklist
+# 📋 Letifi Realty - Complete Deployment Checklist
 
 Use this checklist to ensure everything is set up correctly.
 
@@ -9,8 +9,8 @@ Use this checklist to ensure everything is set up correctly.
 - [ ] Open terminal in your project directory
 - [ ] Run: `git init`
 - [ ] Run: `git add .`
-- [ ] Run: `git commit -m "Initial commit - Letify Realty website"`
-- [ ] Run: `git remote add origin https://github.com/[YOUR-USERNAME]/letifyrealty.git`
+- [ ] Run: `git commit -m "Initial commit - Letifi Realty website"`
+- [ ] Run: `git remote add origin https://github.com/[YOUR-USERNAME]/letifirealty.git`
 - [ ] Run: `git push -u origin main` (or `git push -u origin master`)
 - [ ] Verify code is visible on GitHub
 
@@ -23,7 +23,7 @@ Use this checklist to ensure everything is set up correctly.
 - [ ] Click "Add new site" → "Import an existing project"
 - [ ] Select "Deploy with GitHub"
 - [ ] Authorize Netlify to access your GitHub
-- [ ] Select the `letifyrealty` repository
+- [ ] Select the `letifirealty` repository
 
 ### Build Settings
 - [ ] Build command: `npm run build`
@@ -39,7 +39,7 @@ Use this checklist to ensure everything is set up correctly.
 ### Deploy
 - [ ] Click "Deploy site"
 - [ ] Wait for build to complete (2-5 minutes)
-- [ ] Note your Netlify domain (e.g., `letify-realty.netlify.app`)
+- [ ] Note your Netlify domain (e.g., `letifi-realty.netlify.app`)
 
 ---
 
@@ -60,12 +60,12 @@ Use this checklist to ensure everything is set up correctly.
 
 Your admin URL will be:
 ```
-https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
+https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letifi-realty-2026
 ```
 
 **Example:**
-- If Netlify domain is: `letify-realty.netlify.app`
-- Admin URL is: `https://letify-realty.netlify.app/admin-cms-letify-realty-2026`
+- If Netlify domain is: `letifi-realty.netlify.app`
+- Admin URL is: `https://letifi-realty.netlify.app/admin-cms-letifi-realty-2026`
 
 - [ ] Write down your admin URL: _________________________________
 - [ ] Bookmark this URL in your browser
@@ -87,7 +87,7 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 ### Contact Information Verification
 - [ ] Phone shows: +234 906 743 5048
 - [ ] WhatsApp link works (clicks to open WhatsApp)
-- [ ] Email shows: info@letifyrealty.com
+- [ ] Email shows: info@letifirealty.com
 - [ ] Address shows: 25 Kpalukwu Street, D-line, Port Harcourt, Rivers State, Nigeria
 - [ ] Business hours: Monday - Friday: 9:00 AM - 5:00 PM
 
@@ -95,7 +95,7 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 - [ ] Fill out contact form with test data
 - [ ] Submit form
 - [ ] See success message
-- [ ] Check info@letifyrealty.com for email notification
+- [ ] Check info@letifirealty.com for email notification
 - [ ] Verify email contains all form details
 
 ---
@@ -103,8 +103,7 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 ## ✅ STEP 6: TEST ADMIN PANEL
 
 ### Access Admin Panel
-- [ ] Go to your admin URL: `https://[domain]/admin-cms-letify-realty-2026`
-- [ ] Or press `Ctrl+Shift+C` (or `Cmd+Shift+C` on Mac)
+- [ ] Go to your admin URL: `https://[domain]/admin-cms-letifi-realty-2026`
 - [ ] Admin panel loads successfully
 
 ### Add Test Property
@@ -154,7 +153,7 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 - [ ] Contact form is visible
 - [ ] Fill out property inquiry form
 - [ ] Submit form
-- [ ] Check info@letifyrealty.com for email
+- [ ] Check info@letifirealty.com for email
 - [ ] Email contains property details and inquirer info
 
 ### Direct Contact Options on Property Page
@@ -224,7 +223,7 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 - [ ] No console errors in browser
 - [ ] Images load properly
 - [ ] Forms submit successfully
-- [ ] Emails arrive at info@letifyrealty.com
+- [ ] Emails arrive at info@letifirealty.com
 - [ ] Admin panel is accessible
 - [ ] Properties can be added/edited/deleted
 - [ ] Website is responsive on all devices
@@ -245,12 +244,12 @@ https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
 
 ## 🎉 DEPLOYMENT COMPLETE!
 
-Once all items are checked, your Letify Realty website is live and fully functional!
+Once all items are checked, your Letifi Realty website is live and fully functional!
 
 ### Your Important URLs:
 - **Website**: https://[your-netlify-domain].netlify.app
-- **Admin Panel**: https://[your-netlify-domain].netlify.app/admin-cms-letify-realty-2026
-- **GitHub Repo**: https://github.com/[your-username]/letifyrealty
+- **Admin Panel**: https://[your-netlify-domain].netlify.app/admin-cms-letifi-realty-2026
+- **GitHub Repo**: https://github.com/[your-username]/letifirealty
 - **Netlify Dashboard**: https://app.netlify.com
 - **Supabase Dashboard**: https://app.supabase.com
 

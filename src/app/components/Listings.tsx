@@ -168,6 +168,19 @@ export function Listings({ onPropertyClick }: ListingsProps) {
       description: 'Prime commercial property in business district',
       features: ['Parking Lot', 'Backup Generator', 'High-Speed Internet']
     },
+    {
+      id: 'default_7',
+      title: 'Oceanview Airbnb Retreat',
+      location: 'Oniru, Lagos',
+      price: 'â‚¦120,000/night',
+      type: 'Airbnb',
+      images: ['https://images.unsplash.com/photo-1505691938895-1758d7feb511?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHxtb2Rlcm4lMjBhaXJibmIlMjBhcGFydG1lbnR8ZW58MXx8fHwxNzY3NDc3NDkwfDA&ixlib=rb-4.1.0&q=80&w=1080'],
+      bedrooms: 2,
+      bathrooms: 2,
+      area: '120 sqm',
+      description: 'Luxury short-stay apartment with skyline views',
+      features: ['Self Check-In', 'High-Speed Wi-Fi', 'Fully Equipped Kitchen', 'Daily Cleaning']
+    },
   ];
 
   if (loading) {
@@ -216,7 +229,7 @@ export function Listings({ onPropertyClick }: ListingsProps) {
 
           {/* Type Filter */}
           <div className="flex flex-wrap gap-3 justify-center">
-            {['all', 'sale', 'rent'].map((type) => (
+            {['all', 'sale', 'rent', 'airbnb'].map((type) => (
               <button
                 key={type}
                 onClick={() => setTypeFilter(type)}

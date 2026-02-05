@@ -35,6 +35,22 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const reservationDefaults = {
+    name: '',
+    email: '',
+    phone: '',
+    checkIn: '',
+    checkOut: '',
+    moveIn: '',
+    guests: 1,
+    leaseTerm: '12 months',
+    notes: '',
+    createAccount: false,
+    paymentMethod: 'Card',
+  };
+  const [reservationData, setReservationData] = useState(reservationDefaults);
+  const [isReservationSubmitting, setIsReservationSubmitting] = useState(false);
+  const [reservationStatus, setReservationStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     fetchProperty();
@@ -111,6 +127,85 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     });
   };
 
+  const handleReservationChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type, checked } = e.target;
+    setReservationData((prev) => ({
+      ...prev,
+      [name]: name === 'guests'
+        ? Math.max(1, parseInt(value, 10) || 1)
+        : type === 'checkbox'
+          ? checked
+          : value,
+    }));
+  };
+
+  const buildReservationMessage = (reservationType: 'airbnb' | 'rent') => {
+    const details = [
+      `Reservation Type: ${reservationType === 'airbnb' ? 'Airbnb' : 'Rent'}`,
+    ];
+
+    if (reservationType === 'airbnb') {
+      details.push(`Check-in: ${reservationData.checkIn}`);
+      details.push(`Check-out: ${reservationData.checkOut}`);
+      details.push(`Guests: ${reservationData.guests}`);
+    } else {
+      details.push(`Move-in Date: ${reservationData.moveIn}`);
+      details.push(`Lease Term: ${reservationData.leaseTerm}`);
+      details.push(`Household Size: ${reservationData.guests}`);
+    }
+
+    details.push(`Payment Method: ${reservationData.paymentMethod}`);
+    details.push(`Account Requested: ${reservationData.createAccount ? 'Yes' : 'No'}`);
+
+    if (reservationData.notes) {
+      details.push(`Notes: ${reservationData.notes}`);
+    }
+
+    return details.join('\n');
+  };
+
+  const handleReservationSubmit = async (reservationType: 'airbnb' | 'rent', e: React.FormEvent) => {
+    e.preventDefault();
+    setIsReservationSubmitting(true);
+    setReservationStatus('idle');
+
+    try {
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/property-inquiries`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${publicAnonKey}`,
+          },
+          body: JSON.stringify({
+            propertyId,
+            name: reservationData.name,
+            email: reservationData.email,
+            phone: reservationData.phone,
+            message: buildReservationMessage(reservationType),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setReservationStatus('success');
+        setReservationData(reservationDefaults);
+        setTimeout(() => setReservationStatus('idle'), 5000);
+      } else {
+        console.error('Error submitting reservation:', data.error);
+        setReservationStatus('error');
+      }
+    } catch (error) {
+      console.error('Error submitting reservation:', error);
+      setReservationStatus('error');
+    } finally {
+      setIsReservationSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95">
@@ -138,6 +233,10 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   const images = property.images && property.images.length > 0 ? property.images : [
     'https://images.unsplash.com/photo-1638369022547-1c763b1b9b3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZXxlbnwxfHx8fDE3NjczNTI3ODB8MA&ixlib=rb-4.1.0&q=80&w=1080'
   ];
+  const propertyType = property.type.toLowerCase();
+  const isAirbnb = propertyType === 'airbnb';
+  const isRent = propertyType === 'rent';
+  const supportsReservation = isAirbnb || isRent;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
@@ -298,6 +397,253 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
           {/* Right Column - Contact Form */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
+              {supportsReservation && (
+                <motion.div
+                  className="bg-card border border-border rounded-xl p-6"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                      {isAirbnb ? 'Book This Stay' : 'Reserve & Pay Rent'}
+                    </h3>
+                    <span className="text-xs text-foreground/60">Account optional</span>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => handleReservationSubmit(isAirbnb ? 'airbnb' : 'rent', e)}
+                    className="space-y-4"
+                  >
+                    {isAirbnb ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="checkIn" className="block mb-2 text-sm text-foreground/80">
+                            Check-In
+                          </label>
+                          <input
+                            type="date"
+                            id="checkIn"
+                            name="checkIn"
+                            value={reservationData.checkIn}
+                            onChange={handleReservationChange}
+                            required
+                            className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="checkOut" className="block mb-2 text-sm text-foreground/80">
+                            Check-Out
+                          </label>
+                          <input
+                            type="date"
+                            id="checkOut"
+                            name="checkOut"
+                            value={reservationData.checkOut}
+                            onChange={handleReservationChange}
+                            required
+                            className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <label htmlFor="moveIn" className="block mb-2 text-sm text-foreground/80">
+                          Move-In Date
+                        </label>
+                        <input
+                          type="date"
+                          id="moveIn"
+                          name="moveIn"
+                          value={reservationData.moveIn}
+                          onChange={handleReservationChange}
+                          required
+                          className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                        />
+                      </div>
+                    )}
+
+                    {isAirbnb ? (
+                      <div>
+                        <label htmlFor="guests" className="block mb-2 text-sm text-foreground/80">
+                          Guests
+                        </label>
+                        <input
+                          type="number"
+                          id="guests"
+                          name="guests"
+                          min={1}
+                          value={reservationData.guests}
+                          onChange={handleReservationChange}
+                          className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="guests" className="block mb-2 text-sm text-foreground/80">
+                            Household Size
+                          </label>
+                          <input
+                            type="number"
+                            id="guests"
+                            name="guests"
+                            min={1}
+                            value={reservationData.guests}
+                            onChange={handleReservationChange}
+                            className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="leaseTerm" className="block mb-2 text-sm text-foreground/80">
+                            Lease Term
+                          </label>
+                          <select
+                            id="leaseTerm"
+                            name="leaseTerm"
+                            value={reservationData.leaseTerm}
+                            onChange={handleReservationChange}
+                            className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                          >
+                            <option value="6 months">6 months</option>
+                            <option value="12 months">12 months</option>
+                            <option value="24 months">24 months</option>
+                          </select>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <label htmlFor="reservationName" className="block mb-2 text-sm text-foreground/80">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        id="reservationName"
+                        name="name"
+                        value={reservationData.name}
+                        onChange={handleReservationChange}
+                        required
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                        placeholder="John Doe"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="reservationEmail" className="block mb-2 text-sm text-foreground/80">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="reservationEmail"
+                        name="email"
+                        value={reservationData.email}
+                        onChange={handleReservationChange}
+                        required
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="reservationPhone" className="block mb-2 text-sm text-foreground/80">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        id="reservationPhone"
+                        name="phone"
+                        value={reservationData.phone}
+                        onChange={handleReservationChange}
+                        required
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                        placeholder="+234 800 000 0000"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="paymentMethod" className="block mb-2 text-sm text-foreground/80">
+                        Payment Method
+                      </label>
+                      <select
+                        id="paymentMethod"
+                        name="paymentMethod"
+                        value={reservationData.paymentMethod}
+                        onChange={handleReservationChange}
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                      >
+                        <option value="Card">Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Split Payment">Split Payment</option>
+                      </select>
+                    </div>
+
+                    <label className="flex items-start gap-3 text-sm text-foreground/80">
+                      <input
+                        type="checkbox"
+                        name="createAccount"
+                        checked={reservationData.createAccount}
+                        onChange={handleReservationChange}
+                        className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+                      />
+                      <span>
+                        Create a Letifi account to manage reservations and payment history.
+                        <span className="block text-xs text-foreground/60">We will email an account setup link after payment.</span>
+                      </span>
+                    </label>
+
+                    <div>
+                      <label htmlFor="notes" className="block mb-2 text-sm text-foreground/80">
+                        Notes (Optional)
+                      </label>
+                      <textarea
+                        id="notes"
+                        name="notes"
+                        value={reservationData.notes}
+                        onChange={handleReservationChange}
+                        rows={3}
+                        className="w-full px-4 py-2 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all resize-none text-sm"
+                        placeholder="Any special requests or questions?"
+                      />
+                    </div>
+
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-foreground/70">
+                      Secure payments supported. You can checkout as a guest or create an account for faster future bookings.
+                    </div>
+
+                    <motion.button
+                      type="submit"
+                      disabled={isReservationSubmitting}
+                      className="w-full bg-gradient-to-r from-primary to-accent text-white py-3 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: isReservationSubmitting ? 1 : 1.02 }}
+                      whileTap={{ scale: isReservationSubmitting ? 1 : 0.98 }}
+                    >
+                      {isReservationSubmitting ? 'Processing...' : 'Proceed to Payment'}
+                    </motion.button>
+
+                    {reservationStatus === 'success' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-green-500/10 border border-green-500/50 text-green-500 px-4 py-3 rounded-lg text-center text-sm"
+                      >
+                        Reservation received! We will email your confirmation and payment details shortly.
+                      </motion.div>
+                    )}
+
+                    {reservationStatus === 'error' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-lg text-center text-sm"
+                      >
+                        Something went wrong. Please try again.
+                      </motion.div>
+                    )}
+                  </form>
+                </motion.div>
+              )}
+
               {/* Contact Card */}
               <motion.div
                 className="bg-card border border-border rounded-xl p-6"
@@ -440,7 +786,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                   </a>
 
                   <a
-                    href="mailto:info@letifyrealty.com"
+                    href="mailto:info@letifirealty.com"
                     className="flex items-center gap-3 p-3 bg-card rounded-lg hover:bg-primary/10 transition-colors group"
                   >
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -448,7 +794,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                     </div>
                     <div>
                       <div className="text-xs text-foreground/60">Email</div>
-                      <div className="text-sm">info@letifyrealty.com</div>
+                      <div className="text-sm">info@letifirealty.com</div>
                     </div>
                   </a>
                 </div>

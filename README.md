@@ -1,6 +1,6 @@
-# Letify Realty - Modern Real Estate Website
+# Letifi Realty - Modern Real Estate Website
 
-A premium real estate website for Letify Realty with a professional aesthetic, built with React, TypeScript, Tailwind CSS, and Supabase.
+A premium real estate website for Letifi Realty with a professional aesthetic, built with React, TypeScript, Tailwind CSS, and Supabase.
 
 ## 🌟 Features
 
@@ -26,7 +26,7 @@ A premium real estate website for Letify Realty with a professional aesthetic, b
 
 ```bash
 # Clone the repository
-git clone https://github.com/uncletuas/letifyrealty.com.git
+git clone https://github.com/uncletuas/letifirealty.com.git
 
 # Install dependencies
 npm install
@@ -59,15 +59,15 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed instructions.
 
 ## 🔐 Admin Access
 
-Access the CMS at: `https://[your-domain]/admin-cms-letify-realty-2026`
+Access the CMS at: `https://[your-domain]/admin-cms-letifi-realty-2026`
+Admin login is required (approved admin emails only).
 
-Or press `Ctrl+Shift+C` (Windows/Linux) or `Cmd+Shift+C` (Mac) while on the website.
 
 ## 📞 Contact Information
 
 - **Phone**: +234 906 743 5048
 - **WhatsApp**: +234 906 743 5048
-- **Email**: info@letifyrealty.com
+- **Email**: info@letifirealty.com
 - **Address**: 25 Kpalukwu Street, D-line, Port Harcourt, Rivers State, Nigeria
 - **Hours**: Monday - Friday, 9:00 AM - 5:00 PM
 
@@ -101,7 +101,7 @@ The admin panel allows you to:
 
 ## 📧 Email Integration
 
-All form submissions automatically send emails to `info@letifyrealty.com` including:
+All form submissions automatically send emails to `info@letifirealty.com` including:
 
 - Contact form inquiries
 - Property-specific inquiries
@@ -122,7 +122,7 @@ Netlify will automatically rebuild and deploy.
 
 ## 📄 License
 
-Private - All rights reserved by Letify Realty
+Private - All rights reserved by Letifi Realty
 
 ## 🤝 Support
 
@@ -135,4 +135,4 @@ For technical support, refer to:
 
 **Version**: 1.0.0  
 **Last Updated**: January 6, 2026  
-**Developed for**: Letify Realty, Port Harcourt, Nigeria
+**Developed for**: Letifi Realty, Port Harcourt, Nigeria

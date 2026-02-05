@@ -11,7 +11,7 @@ export function ServiceDetail({ serviceType, onClose }: ServiceDetailProps) {
     sales: {
       title: 'Property Sales & Leasing',
       subtitle: 'Find Your Perfect Property or Secure the Ideal Tenant',
-      description: 'Whether you\'re looking to buy your dream home or lease a premium property, Letify Realty offers comprehensive sales and leasing services tailored to your needs.',
+      description: 'Whether you\'re looking to buy your dream home or lease a premium property, Letifi Realty offers comprehensive sales and leasing services tailored to your needs.',
       image: 'https://images.unsplash.com/photo-1638369022547-1c763b1b9b3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBsdXh1cnklMjBob3VzZXxlbnwxfHx8fDE3NjczNTI3ODB8MA&ixlib=rb-4.1.0&q=80&w=1080',
       benefits: [
         'Extensive property database with verified listings',
@@ -271,8 +271,8 @@ export function ServiceDetail({ serviceType, onClose }: ServiceDetailProps) {
                     </div>
                     <div>
                       <div className="text-foreground/60 text-sm mb-1">Email</div>
-                      <a href="mailto:info@letifyrealty.com" className="text-primary hover:text-accent transition-colors">
-                        info@letifyrealty.com
+                      <a href="mailto:info@letifirealty.com" className="text-primary hover:text-accent transition-colors">
+                        info@letifirealty.com
                       </a>
                     </div>
                   </div>
@@ -287,7 +287,7 @@ export function ServiceDetail({ serviceType, onClose }: ServiceDetailProps) {
                 transition={{ delay: 0.3 }}
               >
                 <h3 className="mb-4" style={{ fontWeight: 600 }}>
-                  Why Choose Letify Realty?
+                  Why Choose Letifi Realty?
                 </h3>
                 <ul className="space-y-3 text-foreground/80 text-sm">
                   <li className="flex items-start gap-2">

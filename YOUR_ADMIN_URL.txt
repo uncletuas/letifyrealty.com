@@ -1,25 +1,25 @@
 ═══════════════════════════════════════════════════════════════
-        LETIFY REALTY - YOUR ADMIN PANEL ACCESS
+        LETIFI REALTY - YOUR ADMIN PANEL ACCESS
 ═══════════════════════════════════════════════════════════════
 
 🔐 ADMIN URL PATTERN:
 ───────────────────────────────────────────────────────────────
 
-https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letify-realty-2026
+https://[YOUR-NETLIFY-DOMAIN]/admin-cms-letifi-realty-2026
 
 ───────────────────────────────────────────────────────────────
 
 📝 EXAMPLES OF HOW YOUR URL WILL LOOK:
 ───────────────────────────────────────────────────────────────
 
-If Netlify gives you: letify-realty.netlify.app
-Your admin URL is: https://letify-realty.netlify.app/admin-cms-letify-realty-2026
+If Netlify gives you: letifi-realty.netlify.app
+Your admin URL is: https://letifi-realty.netlify.app/admin-cms-letifi-realty-2026
 
-If Netlify gives you: letifyrealty.netlify.app
-Your admin URL is: https://letifyrealty.netlify.app/admin-cms-letify-realty-2026
+If Netlify gives you: letifirealty.netlify.app
+Your admin URL is: https://letifirealty.netlify.app/admin-cms-letifi-realty-2026
 
-If you use custom domain: www.letifyrealty.com
-Your admin URL is: https://www.letifyrealty.com/admin-cms-letify-realty-2026
+If you use custom domain: www.letifirealty.com
+Your admin URL is: https://www.letifirealty.com/admin-cms-letifi-realty-2026
 
 ───────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ Your admin URL is: https://www.letifyrealty.com/admin-cms-letify-realty-2026
 ───────────────────────────────────────────────────────────────
 
 1. Note your Netlify domain (shown at top of Netlify dashboard)
-2. Add /admin-cms-letify-realty-2026 to the end
+2. Add /admin-cms-letifi-realty-2026 to the end
 3. Bookmark this URL for easy access
 4. DO NOT share this URL publicly!
 
@@ -59,7 +59,7 @@ Variable value: re_EERQ5Rb7_9d81fgJswRbZFSRcFwC6nwKV
 📞 ALL INQUIRIES WILL BE SENT TO:
 ───────────────────────────────────────────────────────────────
 
-Email: info@letifyrealty.com
+Email: info@letifirealty.com
 
 Make sure you can receive emails at this address!
 

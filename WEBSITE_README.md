@@ -1,4 +1,4 @@
-# Letify Realty - Premium Real Estate Website
+# Letifi Realty - Premium Real Estate Website
 
 A modern, premium real estate website built with React, TypeScript, Tailwind CSS, and Supabase backend.
 
@@ -69,7 +69,6 @@ A modern, premium real estate website built with React, TypeScript, Tailwind CSS
 - Contact information
 
 ### Property CMS
-- **Access**: Press `Ctrl+Shift+C` (Windows/Linux) or `Cmd+Shift+C` (Mac)
 - Add new properties
 - Edit existing properties
 - Delete properties
@@ -112,7 +111,7 @@ A modern, premium real estate website built with React, TypeScript, Tailwind CSS
 Users can reach out via:
 - Contact form (stores in database)
 - Phone: +234 800 000 0000
-- Email: info@letifyrealty.com
+- Email: info@letifirealty.com
 - WhatsApp: Direct link to chat
 - Property-specific inquiries (tracked separately)
 
@@ -195,11 +194,11 @@ The website is ready for deployment to any hosting platform that supports:
 
 ## 📄 License
 
-© 2025 Letify Realty. All rights reserved.
+© 2025 Letifi Realty. All rights reserved.
 
 ## 🤝 Support
 
-For support, email info@letifyrealty.com or call +234 800 000 0000.
+For support, email info@letifirealty.com or call +234 800 000 0000.
 
 ---
 

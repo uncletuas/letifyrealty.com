@@ -1,17 +1,17 @@
-# 🎯 LETIFY REALTY - Quick Reference Card
+# 🎯 LETIFI REALTY - Quick Reference Card
 
 ## 🔐 YOUR ADMIN ACCESS
 
 ### Admin Panel URL (After Netlify Deployment):
 ```
-https://[your-netlify-site].netlify.app/admin-cms-letify-realty-2026
+https://[your-netlify-site].netlify.app/admin-cms-letifi-realty-2026
 ```
 
 **Replace `[your-netlify-site]` with your actual Netlify domain**
 
 **Example:**
-- If your Netlify gives you: `letify-realty.netlify.app`
-- Your admin URL is: `https://letify-realty.netlify.app/admin-cms-letify-realty-2026`
+- If your Netlify gives you: `letifi-realty.netlify.app`
+- Your admin URL is: `https://letifi-realty.netlify.app/admin-cms-letifi-realty-2026`
 
 ### Keyboard Shortcut (Backup Access):
 - Windows/Linux: `Ctrl + Shift + C`
@@ -24,7 +24,7 @@ https://[your-netlify-site].netlify.app/admin-cms-letify-realty-2026
 ### Push to GitHub:
 ```bash
 git add .
-git commit -m "Letify Realty website"
+git commit -m "Letifi Realty website"
 git push -u origin main
 ```
 
@@ -44,7 +44,7 @@ RESEND_API_KEY = re_EERQ5Rb7_9d81fgJswRbZFSRcFwC6nwKV
 1. Netlify: Site settings → Environment variables
 2. Supabase: Edge Functions → Environment variables
 
-**Emails sent to:** info@letifyrealty.com
+**Emails sent to:** info@letifirealty.com
 
 ---
 
@@ -54,7 +54,7 @@ RESEND_API_KEY = re_EERQ5Rb7_9d81fgJswRbZFSRcFwC6nwKV
 |------|-------|
 | **Phone** | +234 906 743 5048 |
 | **WhatsApp** | +234 906 743 5048 |
-| **Email** | info@letifyrealty.com |
+| **Email** | info@letifirealty.com |
 | **Address** | 25 Kpalukwu Street, D-line, Port Harcourt, Rivers State, Nigeria |
 | **Hours** | Monday - Friday: 9:00 AM - 5:00 PM |
 
@@ -87,7 +87,7 @@ After deploying to Netlify:
 - [ ] Test admin URL access
 - [ ] Add a test property in CMS
 - [ ] Submit a test contact form
-- [ ] Check email arrives at info@letifyrealty.com
+- [ ] Check email arrives at info@letifirealty.com
 - [ ] Test WhatsApp link clicks
 - [ ] Test phone number clicks on mobile
 - [ ] Test property detail pages
@@ -98,7 +98,7 @@ After deploying to Netlify:
 ## 🆘 QUICK FIXES
 
 **Can't access admin?**
-→ Make sure you're using the full URL with `/admin-cms-letify-realty-2026`
+→ Make sure you're using the full URL with `/admin-cms-letifi-realty-2026`
 
 **Forms not working?**
 → Check environment variables are set in Netlify
@@ -113,7 +113,7 @@ After deploying to Netlify:
 
 ## 📱 IMPORTANT LINKS
 
-**GitHub Repo:** https://github.com/[your-username]/letifyrealty  
+**GitHub Repo:** https://github.com/[your-username]/letifirealty  
 **Netlify Dashboard:** https://app.netlify.com  
 **Supabase Dashboard:** https://app.supabase.com  
 **Resend Dashboard:** https://resend.com/emails
