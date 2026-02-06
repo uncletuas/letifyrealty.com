@@ -1,7 +1,20 @@
+
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { motion } from 'motion/react';
-import { ArrowLeft, Bell, Mail, MessageCircle, Save, Send } from 'lucide-react';
+import {
+  ArrowLeft,
+  Bell,
+  Mail,
+  MessageCircle,
+  Save,
+  Send,
+  User,
+  Clipboard,
+  Calendar,
+  Edit3,
+  Camera,
+} from 'lucide-react';
 import { supabase } from '../../../utils/supabase/client';
 import { projectId } from '../../../utils/supabase/info';
 
@@ -18,6 +31,7 @@ interface ProfileData {
   address: string;
   phone: string;
   location: string;
+  avatarUrl?: string;
   interests: {
     propertyTypes: string[];
     serviceTypes: string[];
@@ -59,6 +73,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     address: session.user.user_metadata?.address || '',
     phone: '',
     location: '',
+    avatarUrl: session.user.user_metadata?.avatar_url || '',
     interests: { propertyTypes: [], serviceTypes: [] },
   });
   const [profileStatus, setProfileStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -78,6 +93,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const [messageStatus, setMessageStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [activePanel, setActivePanel] = useState<'profile' | 'requests' | 'history' | 'messages' | 'notifications'>('profile');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -106,6 +122,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           address: data.profile.address || session.user.user_metadata?.address || '',
           phone: data.profile.phone || '',
           location: data.profile.location || '',
+          avatarUrl: data.profile.avatarUrl || session.user.user_metadata?.avatar_url || '',
           interests: data.profile.interests || { propertyTypes: [], serviceTypes: [] },
         });
       }
@@ -171,6 +188,15 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     }
   };
 
+  const handleAvatarFile = (file: File | null) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProfile((prev) => ({ ...prev, avatarUrl: String(reader.result || '') }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleProfileSave = async () => {
     const ageValue =
       typeof profile.age === 'string'
@@ -199,6 +225,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
       const data = await response.json();
       if (response.ok && data.success) {
         setProfileStatus('saved');
+        setIsEditingProfile(false);
         setTimeout(() => setProfileStatus('idle'), 3000);
       } else {
         setProfileError(data.error || 'Could not save profile.');
@@ -322,168 +349,277 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const isAdult = !!ageValue && !Number.isNaN(ageValue) && ageValue >= 18;
   const isProfileComplete = !!profile.gender && !!profile.address && isAdult;
 
+  const avatarInitials = profile.fullName
+    ? profile.fullName
+        .split(' ')
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join('')
+        .toUpperCase()
+    : 'LR';
+
   const dashboardGrid = (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { id: 'profile', title: 'Profile', description: 'Update your details and interests' },
-          { id: 'requests', title: 'Request Service', description: 'Send a service or purchase request' },
-          { id: 'history', title: 'Reservations', description: 'View your requests and history' },
-          { id: 'messages', title: 'Messages', description: 'Chat with the admin team' },
-          { id: 'notifications', title: 'Notifications', description: 'See updates and alerts' },
-        ].map((card) => (
-          <button
-            key={card.id}
-            onClick={() => setActivePanel(card.id as typeof activePanel)}
-            className={`rounded-2xl border p-5 text-left transition-all ${
-              activePanel === card.id
-                ? 'border-primary/60 bg-gradient-to-br from-primary/10 to-accent/10'
-                : 'border-border bg-card hover:border-primary/40'
-            }`}
-          >
-            <div className="text-sm text-foreground/60 mb-1">{card.title}</div>
-            <div className="text-foreground/80 text-sm">{card.description}</div>
-          </button>
-        ))}
-      </div>
-
-      {activePanel === 'profile' && (
-        <div className="bg-card border border-border rounded-2xl p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl" style={{ fontWeight: 700 }}>Profile</h2>
-            <span
-              className={`text-xs px-3 py-1 rounded-full border ${
-                isProfileComplete
-                  ? 'border-green-500/40 text-green-500 bg-green-500/10'
-                  : 'border-amber-500/40 text-amber-500 bg-amber-500/10'
+          { id: 'profile', label: 'Profile', icon: User },
+          { id: 'requests', label: 'Request Service', icon: Clipboard },
+          { id: 'history', label: 'Reservations', icon: Calendar },
+          { id: 'messages', label: 'Messages', icon: MessageCircle },
+          { id: 'notifications', label: 'Notifications', icon: Bell },
+        ].map((card) => {
+          const Icon = card.icon;
+          return (
+            <button
+              key={card.id}
+              onClick={() => setActivePanel(card.id as typeof activePanel)}
+              className={`rounded-2xl border p-5 flex flex-col items-start gap-3 transition-all ${
+                activePanel === card.id
+                  ? 'border-primary/60 bg-gradient-to-br from-primary/10 to-accent/10'
+                  : 'border-border bg-card hover:border-primary/40'
               }`}
             >
-              {isProfileComplete ? 'Verified 18+' : 'Complete required fields'}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
-              <input
-                type="text"
-                value={profile.fullName}
-                onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
-            <div>
-              <label className="block mb-2 text-sm text-foreground/80">Gender</label>
-              <select
-                value={profile.gender}
-                onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              >
-                <option value="">Select gender</option>
-                <option value="Female">Female</option>
-                <option value="Male">Male</option>
-                <option value="Non-binary">Non-binary</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
-            </div>
-            <div>
-              <label className="block mb-2 text-sm text-foreground/80">Age</label>
-              <input
-                type="number"
-                min={18}
-                value={profile.age}
-                onChange={(e) =>
-                  setProfile({
-                    ...profile,
-                    age: e.target.value === '' ? '' : Number(e.target.value),
-                  })
-                }
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-              <p className="text-xs text-foreground/60 mt-1">Must be 18 or older.</p>
-            </div>
-            <div>
-              <label className="block mb-2 text-sm text-foreground/80">Phone</label>
-              <input
-                type="tel"
-                value={profile.phone}
-                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block mb-2 text-sm text-foreground/80">Address</label>
-              <input
-                type="text"
-                value={profile.address}
-                onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block mb-2 text-sm text-foreground/80">City / State</label>
-              <input
-                type="text"
-                value={profile.location}
-                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm text-foreground/80 mb-2">Property Interests</div>
-              <div className="flex flex-wrap gap-2">
-                {['Sale', 'Rent', 'Airbnb', 'Commercial'].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => toggleInterest('propertyTypes', item)}
-                    className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
-                      profile.interests.propertyTypes.includes(item)
-                        ? 'bg-primary text-white border-primary'
-                        : 'border-border text-foreground/70 hover:border-primary/50'
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white">
+                <Icon size={18} />
               </div>
-            </div>
-            <div>
-              <div className="text-sm text-foreground/80 mb-2">Service Interests</div>
-              <div className="flex flex-wrap gap-2">
-                {['Sales', 'Management', 'Advisory', 'Marketing'].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => toggleInterest('serviceTypes', item)}
-                    className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
-                      profile.interests.serviceTypes.includes(item)
-                        ? 'bg-primary text-white border-primary'
-                        : 'border-border text-foreground/70 hover:border-primary/50'
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+              <div className="text-sm text-foreground/80" style={{ fontWeight: 600 }}>
+                {card.label}
               </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 mt-6">
-            <button
-              onClick={handleProfileSave}
-              className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-5 py-3 rounded-lg"
-            >
-              <Save size={18} />
-              Save Profile
             </button>
-            {profileStatus === 'saved' && (
-              <span className="text-sm text-green-500">Profile updated.</span>
-            )}
-            {profileStatus === 'error' && (
-              <span className="text-sm text-red-500">{profileError || 'Could not save profile.'}</span>
-            )}
+          );
+        })}
+      </div>
+      {activePanel === 'profile' && (
+        <div className="bg-card border border-border rounded-2xl p-8 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-border flex items-center justify-center overflow-hidden">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-lg text-foreground/70" style={{ fontWeight: 700 }}>{avatarInitials}</div>
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl" style={{ fontWeight: 700 }}>Profile</h2>
+                <p className="text-sm text-foreground/60">Keep your details current to unlock requests.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              {!isEditingProfile ? (
+                <button
+                  onClick={() => setIsEditingProfile(true)}
+                  className="flex items-center gap-2 border border-border px-4 py-2 rounded-lg text-sm hover:border-primary/60 transition-colors"
+                >
+                  <Edit3 size={16} />
+                  Edit Profile
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsEditingProfile(false)}
+                  className="border border-border px-4 py-2 rounded-lg text-sm hover:border-primary/60 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+              <span
+                className={`text-xs px-3 py-1 rounded-full border ${
+                  isProfileComplete
+                    ? 'border-green-500/40 text-green-500 bg-green-500/10'
+                    : 'border-amber-500/40 text-amber-500 bg-amber-500/10'
+                }`}
+              >
+                {isProfileComplete ? 'Verified 18+' : 'Complete required fields'}
+              </span>
+            </div>
           </div>
+
+          {!isEditingProfile && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Full Name</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.fullName || 'Not set'}</div>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Email</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{session.user.email}</div>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Gender</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.gender || 'Not set'}</div>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Age</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.age || 'Not set'}</div>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Phone</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.phone || 'Not set'}</div>
+              </div>
+              <div className="rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">City / State</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.location || 'Not set'}</div>
+              </div>
+              <div className="md:col-span-2 rounded-xl border border-border p-4">
+                <div className="text-xs text-foreground/60">Address</div>
+                <div className="text-sm" style={{ fontWeight: 600 }}>{profile.address || 'Not set'}</div>
+              </div>
+            </div>
+          )}
+
+          {isEditingProfile && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Full Name</label>
+                  <input
+                    type="text"
+                    value={profile.fullName}
+                    onChange={(e) => setProfile({ ...profile, fullName: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Gender</label>
+                  <select
+                    value={profile.gender}
+                    onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Age</label>
+                  <input
+                    type="number"
+                    min={18}
+                    value={profile.age}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        age: e.target.value === '' ? '' : Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                  <p className="text-xs text-foreground/60 mt-1">Must be 18 or older.</p>
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Phone</label>
+                  <input
+                    type="tel"
+                    value={profile.phone}
+                    onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm text-foreground/80">Address</label>
+                  <input
+                    type="text"
+                    value={profile.address}
+                    onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm text-foreground/80">City / State</label>
+                  <input
+                    type="text"
+                    value={profile.location}
+                    onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Profile Photo URL</label>
+                  <input
+                    type="url"
+                    value={profile.avatarUrl || ''}
+                    onChange={(e) => setProfile({ ...profile, avatarUrl: e.target.value })}
+                    className="w-full px-4 py-3 bg-input-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="https://..."
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm text-foreground/80">Upload Photo</label>
+                  <label className="flex items-center gap-2 border border-border rounded-lg px-4 py-3 text-sm text-foreground/70 cursor-pointer hover:border-primary/50 transition-colors">
+                    <Camera size={16} />
+                    Choose Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleAvatarFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-foreground/80 mb-2">Property Interests</div>
+                  <div className="flex flex-wrap gap-2">
+                    {['Sale', 'Rent', 'Airbnb', 'Commercial'].map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => toggleInterest('propertyTypes', item)}
+                        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
+                          profile.interests.propertyTypes.includes(item)
+                            ? 'bg-primary text-white border-primary'
+                            : 'border-border text-foreground/70 hover:border-primary/50'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-foreground/80 mb-2">Service Interests</div>
+                  <div className="flex flex-wrap gap-2">
+                    {['Sales', 'Management', 'Advisory', 'Marketing'].map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => toggleInterest('serviceTypes', item)}
+                        className={`px-3 py-2 rounded-lg text-sm border transition-colors ${
+                          profile.interests.serviceTypes.includes(item)
+                            ? 'bg-primary text-white border-primary'
+                            : 'border-border text-foreground/70 hover:border-primary/50'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleProfileSave}
+                  className="flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-white px-5 py-3 rounded-lg"
+                >
+                  <Save size={18} />
+                  Save Profile
+                </button>
+                {profileStatus === 'saved' && (
+                  <span className="text-sm text-green-500">Profile updated.</span>
+                )}
+                {profileStatus === 'error' && (
+                  <span className="text-sm text-red-500">{profileError || 'Could not save profile.'}</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -571,7 +707,6 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           </form>
         </div>
       )}
-
       {activePanel === 'history' && (
         <div className="bg-card border border-border rounded-2xl p-8">
           <h2 className="text-xl mb-6" style={{ fontWeight: 700 }}>

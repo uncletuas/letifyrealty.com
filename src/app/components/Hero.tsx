@@ -66,7 +66,7 @@ export function Hero() {
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl max-w-5xl mx-auto mb-6 bg-gradient-to-r from-foreground via-accent to-primary bg-clip-text text-transparent"
             style={{ fontWeight: 700, lineHeight: 1.2 }}
           >
-            Smart Real Estate Solutions Made Simple
+            Your Compass to Better Property
           </motion.h1>
           
           <motion.p

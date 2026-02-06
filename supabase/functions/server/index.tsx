@@ -446,18 +446,19 @@ app.post("/make-server-ef402f1d/profiles", async (c) => {
       return c.json({ error: "You must be 18 or older to register." }, 400);
     }
     const existingProfile = await kv.get(`profile_${user.id}`);
-    const profile = {
-      userId: user.id,
-      email: user.email,
-      fullName: body.fullName || '',
-      gender: body.gender || '',
-      age: ageValue,
-      address: body.address || '',
-      phone: body.phone || '',
-      location: body.location || '',
-      interests: body.interests || { propertyTypes: [], serviceTypes: [] },
-      updatedAt: new Date().toISOString(),
-    };
+      const profile = {
+        userId: user.id,
+        email: user.email,
+        fullName: body.fullName || '',
+        gender: body.gender || '',
+        age: ageValue,
+        address: body.address || '',
+        phone: body.phone || '',
+        location: body.location || '',
+        avatarUrl: body.avatarUrl || '',
+        interests: body.interests || { propertyTypes: [], serviceTypes: [] },
+        updatedAt: new Date().toISOString(),
+      };
     await kv.set(`profile_${user.id}`, profile);
 
     if (!existingProfile && user.email) {
