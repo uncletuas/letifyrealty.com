@@ -500,10 +500,33 @@ app.post("/make-server-ef402f1d/requests", async (c) => {
       status: 'new',
     };
     await kv.set(requestId, request);
-    await createAdminNotification(
-      "New Service Request",
-      `${user.email} submitted a ${request.requestType} request.`,
-    );
+      await createAdminNotification(
+        "New Service Request",
+        `${user.email} submitted a ${request.requestType} request.`,
+      );
+
+      await createUserNotification(
+        user.id,
+        "Request received",
+        `We received your ${request.requestType} request. Our team will reach out shortly with next steps.`,
+      );
+
+      if (user.email) {
+        await sendEmail(
+          user.email,
+          "Request Received - Letifi Realty",
+          `
+            <h2>Request Received</h2>
+            <p>Hello ${user.email},</p>
+            <p>We have received your ${request.requestType} request.</p>
+            <p><strong>Service:</strong> ${request.serviceType || 'N/A'}</p>
+            <p><strong>Property:</strong> ${request.propertyType || 'N/A'}</p>
+            ${request.budget ? `<p><strong>Budget:</strong> ${request.budget}</p>` : ''}
+            ${request.message ? `<p><strong>Message:</strong></p><p>${request.message}</p>` : ''}
+            <p>We will contact you shortly.</p>
+          `,
+        );
+      }
 
     await sendEmail(
       Array.from(ADMIN_EMAILS),

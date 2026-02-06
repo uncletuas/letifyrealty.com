@@ -75,6 +75,9 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   };
   const [consultationData, setConsultationData] = useState(consultationDefaults);
   const [consultationStatus, setConsultationStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [showInspectionForm, setShowInspectionForm] = useState(false);
+  const [showConsultationForm, setShowConsultationForm] = useState(false);
+  const [showInquiryForm, setShowInquiryForm] = useState(false);
 
   useEffect(() => {
     fetchProperty();
@@ -585,7 +588,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
                   <form
                     onSubmit={(e) => handleReservationSubmit(isAirbnb ? 'airbnb' : 'rent', e)}
-                    className="space-y-4"
+                    className="space-y-4 max-h-[65vh] overflow-y-auto pr-2"
                   >
                     {isAirbnb ? (
                       <div className="grid grid-cols-2 gap-4">
@@ -822,10 +825,21 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 }}
               >
-                <h3 className="mb-6" style={{ fontWeight: 600, fontSize: '1.25rem' }}>
-                  Book an Inspection
-                </h3>
-                <form onSubmit={handleInspectionSubmit} className="space-y-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                    Book an Inspection
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowInspectionForm((prev) => !prev)}
+                    className="text-sm text-primary hover:text-accent transition-colors"
+                  >
+                    {showInspectionForm ? 'Hide Form' : 'Open Form'}
+                  </button>
+                </div>
+                {showInspectionForm && (
+                  <div className="max-h-[60vh] overflow-y-auto pr-2">
+                    <form onSubmit={handleInspectionSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block mb-2 text-sm text-foreground/80">Preferred Date</label>
@@ -908,7 +922,9 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                       Unable to submit your inspection request.
                     </div>
                   )}
-                </form>
+                    </form>
+                  </div>
+                )}
               </motion.div>
 
               <motion.div
@@ -917,10 +933,21 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <h3 className="mb-6" style={{ fontWeight: 600, fontSize: '1.25rem' }}>
-                  Request a Consultation
-                </h3>
-                <form onSubmit={handleConsultationSubmit} className="space-y-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                    Request a Consultation
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowConsultationForm((prev) => !prev)}
+                    className="text-sm text-primary hover:text-accent transition-colors"
+                  >
+                    {showConsultationForm ? 'Hide Form' : 'Open Form'}
+                  </button>
+                </div>
+                {showConsultationForm && (
+                  <div className="max-h-[60vh] overflow-y-auto pr-2">
+                    <form onSubmit={handleConsultationSubmit} className="space-y-4">
                   <div>
                     <label className="block mb-2 text-sm text-foreground/80">Preferred Date</label>
                     <input
@@ -1011,7 +1038,9 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                       Unable to submit your consultation request.
                     </div>
                   )}
-                </form>
+                    </form>
+                  </div>
+                )}
               </motion.div>
 
               {/* Contact Card */}
@@ -1021,11 +1050,22 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <h3 className="mb-6" style={{ fontWeight: 600, fontSize: '1.25rem' }}>
-                  Interested in this property?
-                </h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 style={{ fontWeight: 600, fontSize: '1.25rem' }}>
+                    Interested in this property?
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowInquiryForm((prev) => !prev)}
+                    className="text-sm text-primary hover:text-accent transition-colors"
+                  >
+                    {showInquiryForm ? 'Hide Form' : 'Open Form'}
+                  </button>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                {showInquiryForm && (
+                  <div className="max-h-[60vh] overflow-y-auto pr-2">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block mb-2 text-sm text-foreground/80">
                       Full Name
@@ -1118,7 +1158,9 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
                       Something went wrong. Please try again.
                     </motion.div>
                   )}
-                </form>
+                    </form>
+                  </div>
+                )}
               </motion.div>
 
               {/* Direct Contact Options */}

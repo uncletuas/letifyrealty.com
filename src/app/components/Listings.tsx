@@ -20,9 +20,23 @@ interface Property {
 
 interface ListingsProps {
   onPropertyClick?: (propertyId: string) => void;
+  limit?: number;
+  showFilters?: boolean;
+  showSearch?: boolean;
+  title?: string;
+  subtitle?: string;
+  sectionId?: string;
 }
 
-export function Listings({ onPropertyClick }: ListingsProps) {
+export function Listings({
+  onPropertyClick,
+  limit,
+  showFilters = true,
+  showSearch = true,
+  title = 'Featured Listings',
+  subtitle = 'Explore our curated selection of premium properties',
+  sectionId = 'listings',
+}: ListingsProps) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,8 +209,10 @@ export function Listings({ onPropertyClick }: ListingsProps) {
     );
   }
 
+  const visibleProperties = limit ? filteredProperties.slice(0, limit) : filteredProperties;
+
   return (
-    <section id="listings" className="py-24 bg-gradient-to-b from-background to-card">
+    <section id={sectionId} className="py-24 bg-gradient-to-b from-background to-card">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-12"
@@ -206,44 +222,48 @@ export function Listings({ onPropertyClick }: ListingsProps) {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent" style={{ fontWeight: 700 }}>
-            Featured Listings
+            {title}
           </h2>
           <p className="text-foreground/70 max-w-2xl mx-auto text-lg">
-            Explore our curated selection of premium properties
+            {subtitle}
           </p>
         </motion.div>
 
         {/* Filters */}
-        <div className="max-w-4xl mx-auto mb-12 space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40" size={20} />
-            <input
-              type="text"
-              placeholder="Search by location or property name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-            />
-          </div>
+        {showFilters && (
+          <div className="max-w-4xl mx-auto mb-12 space-y-4">
+            {/* Search Bar */}
+            {showSearch && (
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search by location or property name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
+              </div>
+            )}
 
-          {/* Type Filter */}
-          <div className="flex flex-wrap gap-3 justify-center">
-            {['all', 'sale', 'rent', 'airbnb', 'commercial'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setTypeFilter(type)}
-                className={`px-6 py-2 rounded-lg transition-all ${
-                  typeFilter === type
-                    ? 'bg-gradient-to-r from-primary to-accent text-white'
-                    : 'bg-card border border-border text-foreground/70 hover:border-primary/50'
-                }`}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
+            {/* Type Filter */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              {['all', 'sale', 'rent', 'airbnb', 'commercial'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setTypeFilter(type)}
+                  className={`px-6 py-2 rounded-lg transition-all ${
+                    typeFilter === type
+                      ? 'bg-gradient-to-r from-primary to-accent text-white'
+                      : 'bg-card border border-border text-foreground/70 hover:border-primary/50'
+                  }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Properties Grid */}
         {filteredProperties.length === 0 ? (
@@ -252,7 +272,7 @@ export function Listings({ onPropertyClick }: ListingsProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProperties.map((property, index) => (
+            {visibleProperties.map((property, index) => (
               <motion.div
                 key={property.id}
                 className="bg-card border border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-all duration-300 cursor-pointer"

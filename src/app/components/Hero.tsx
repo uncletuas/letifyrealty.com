@@ -26,7 +26,7 @@ export function Hero() {
           className="w-full h-full object-cover"
         />
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/60" />
       </div>
       
       {/* Animated Gradient Orbs */}

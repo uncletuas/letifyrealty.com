@@ -6,9 +6,10 @@ import logo from '@/assets/letifi-logo.png';
 interface HeaderProps {
   onAccountClick?: () => void;
   isAuthenticated?: boolean;
+  onNavigate?: (target: 'home' | 'about' | 'services' | 'listings' | 'contact') => void;
 }
 
-export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps) {
+export function Header({ onAccountClick, isAuthenticated = false, onNavigate }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (id: string) => {
@@ -19,12 +20,21 @@ export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps)
     }
   };
 
+  const handleNav = (target: 'home' | 'about' | 'services' | 'listings' | 'contact') => {
+    if (onNavigate) {
+      onNavigate(target);
+      setMobileMenuOpen(false);
+      return;
+    }
+    scrollToSection(target);
+  };
+
   const navItems = [
-    { label: 'Home', id: 'home' },
-    { label: 'About', id: 'about' },
-    { label: 'Services', id: 'services' },
-    { label: 'Listings', id: 'listings' },
-    { label: 'Contact', id: 'contact' },
+    { label: 'Home', id: 'home' as const },
+    { label: 'About', id: 'about' as const },
+    { label: 'Services', id: 'services' as const },
+    { label: 'Listings', id: 'listings' as const },
+    { label: 'Contact', id: 'contact' as const },
   ];
 
   return (
@@ -33,7 +43,7 @@ export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps)
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <motion.button
-            onClick={() => scrollToSection('home')}
+            onClick={() => handleNav('home')}
             className="flex items-center"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -46,7 +56,7 @@ export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps)
             {navItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => scrollToSection(item.id)}
+                onClick={() => handleNav(item.id)}
                 className="text-foreground/80 hover:text-primary transition-colors duration-200"
               >
                 {item.label}
@@ -86,7 +96,7 @@ export function Header({ onAccountClick, isAuthenticated = false }: HeaderProps)
               {navItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => scrollToSection(item.id)}
+                  onClick={() => handleNav(item.id)}
                   className="text-foreground/80 hover:text-primary transition-colors duration-200 text-left py-2"
                 >
                   {item.label}

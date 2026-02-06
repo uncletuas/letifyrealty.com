@@ -77,6 +77,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const [messageContent, setMessageContent] = useState('');
   const [messageStatus, setMessageStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [activePanel, setActivePanel] = useState<'profile' | 'requests' | 'history' | 'messages' | 'notifications'>('profile');
 
   useEffect(() => {
     fetchProfile();
@@ -240,6 +241,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
       if (response.ok && data.success) {
         setRequestStatus('sent');
         fetchRequests();
+        fetchNotifications();
         setRequestData({
           requestType: 'service',
           serviceType: 'Sales',
@@ -281,6 +283,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
         setMessageContent('');
         fetchMessages();
         fetchRequests();
+        fetchNotifications();
         setTimeout(() => setMessageStatus('idle'), 2000);
       } else {
         setMessageStatus('error');
@@ -320,8 +323,31 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const isProfileComplete = !!profile.gender && !!profile.address && isAdult;
 
   const dashboardGrid = (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2 space-y-8">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+        {[
+          { id: 'profile', title: 'Profile', description: 'Update your details and interests' },
+          { id: 'requests', title: 'Request Service', description: 'Send a service or purchase request' },
+          { id: 'history', title: 'Reservations', description: 'View your requests and history' },
+          { id: 'messages', title: 'Messages', description: 'Chat with the admin team' },
+          { id: 'notifications', title: 'Notifications', description: 'See updates and alerts' },
+        ].map((card) => (
+          <button
+            key={card.id}
+            onClick={() => setActivePanel(card.id as typeof activePanel)}
+            className={`rounded-2xl border p-5 text-left transition-all ${
+              activePanel === card.id
+                ? 'border-primary/60 bg-gradient-to-br from-primary/10 to-accent/10'
+                : 'border-border bg-card hover:border-primary/40'
+            }`}
+          >
+            <div className="text-sm text-foreground/60 mb-1">{card.title}</div>
+            <div className="text-foreground/80 text-sm">{card.description}</div>
+          </button>
+        ))}
+      </div>
+
+      {activePanel === 'profile' && (
         <div className="bg-card border border-border rounded-2xl p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl" style={{ fontWeight: 700 }}>Profile</h2>
@@ -459,7 +485,9 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
             )}
           </div>
         </div>
+      )}
 
+      {activePanel === 'requests' && (
         <div className="bg-card border border-border rounded-2xl p-8">
           <h2 className="text-xl mb-6" style={{ fontWeight: 700 }}>
             Request Service or Purchase
@@ -542,7 +570,9 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
             </div>
           </form>
         </div>
+      )}
 
+      {activePanel === 'history' && (
         <div className="bg-card border border-border rounded-2xl p-8">
           <h2 className="text-xl mb-6" style={{ fontWeight: 700 }}>
             Reservations & History
@@ -576,7 +606,9 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
             )}
           </div>
         </div>
+      )}
 
+      {activePanel === 'messages' && (
         <div className="bg-card border border-border rounded-2xl p-8">
           <div className="flex items-center gap-3 mb-6">
             <MessageCircle size={20} className="text-primary" />
@@ -622,9 +654,9 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
             </div>
           </form>
         </div>
-      </div>
+      )}
 
-      <div className="space-y-8">
+      {activePanel === 'notifications' && (
         <div className="bg-card border border-border rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
             <Bell size={18} className="text-primary" />
@@ -646,18 +678,18 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
             )}
           </div>
         </div>
+      )}
 
-        <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-2xl p-6">
-          <h3 className="text-lg mb-3" style={{ fontWeight: 600 }}>Account Status</h3>
-          <p className="text-sm text-foreground/70 mb-4">
-            Your account gives you access to all Letifi Realty services, purchases, and priority updates.
-          </p>
-          <div className="text-sm text-foreground/80 space-y-1">
-            <div>Email: {session.user.email}</div>
-            <div>Member since: {new Date(session.user.created_at || '').toLocaleDateString()}</div>
-            <div>Profile: {isProfileComplete ? 'Complete' : 'Incomplete'}</div>
-            <div>Reservations: {requests.length}</div>
-          </div>
+      <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-2xl p-6">
+        <h3 className="text-lg mb-3" style={{ fontWeight: 600 }}>Account Status</h3>
+        <p className="text-sm text-foreground/70 mb-4">
+          Your account gives you access to all Letifi Realty services, purchases, and priority updates.
+        </p>
+        <div className="text-sm text-foreground/80 space-y-1">
+          <div>Email: {session.user.email}</div>
+          <div>Member since: {new Date(session.user.created_at || '').toLocaleDateString()}</div>
+          <div>Profile: {isProfileComplete ? 'Complete' : 'Incomplete'}</div>
+          <div>Reservations: {requests.length}</div>
         </div>
       </div>
     </div>

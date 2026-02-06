@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
-import { About } from './components/About';
 import { Services } from './components/Services';
 import { Listings } from './components/Listings';
 import { Contact } from './components/Contact';
@@ -16,10 +15,12 @@ import { AuthModal } from './components/AuthModal';
 import { UserDashboard } from './components/UserDashboard';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { TermsConditions } from './components/TermsConditions';
+import { AboutPage } from './components/AboutPage';
+import { ListingsPage } from './components/ListingsPage';
 import { supabase } from '../../utils/supabase/client';
 import { ADMIN_EMAILS } from './constants/admin';
 
-type View = 'home' | 'property-details' | 'service-detail' | 'admin' | 'account' | 'privacy' | 'terms';
+type View = 'home' | 'property-details' | 'service-detail' | 'admin' | 'account' | 'privacy' | 'terms' | 'about' | 'listings';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -43,6 +44,10 @@ export default function App() {
         setCurrentView('privacy');
       } else if (path === '/terms') {
         setCurrentView('terms');
+      } else if (path === '/about') {
+        setCurrentView('about');
+      } else if (path === '/listings') {
+        setCurrentView('listings');
       } else {
         setCurrentView('home');
       }
@@ -92,13 +97,8 @@ export default function App() {
 
   const handleAccountClick = () => {
     if (session) {
-      setCurrentView('home');
-      if (window.location.pathname !== '/') {
-        window.history.pushState({}, '', '/');
-      }
-      setTimeout(() => {
-        document.getElementById('member-hub')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      setCurrentView('account');
+      window.history.pushState({}, '', '/account');
       return;
     }
     setAuthModalOpen(true);
@@ -123,10 +123,28 @@ export default function App() {
     setAuthModalOpen(false);
     if (currentView !== 'account') {
       setCurrentView('home');
-      setTimeout(() => {
-        document.getElementById('member-hub')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
     }
+  };
+
+  const handleNavigate = (target: 'home' | 'about' | 'services' | 'listings' | 'contact') => {
+    if (target === 'about') {
+      setCurrentView('about');
+      window.history.pushState({}, '', '/about');
+      return;
+    }
+    if (target === 'listings') {
+      setCurrentView('listings');
+      window.history.pushState({}, '', '/listings');
+      return;
+    }
+    if (target === 'home') {
+      setCurrentView('home');
+      if (window.location.pathname !== '/') {
+        window.history.pushState({}, '', '/');
+      }
+      return;
+    }
+    handleSectionNavigate(target);
   };
 
   if (currentView === 'property-details' && selectedPropertyId) {
@@ -181,11 +199,11 @@ export default function App() {
   if (currentView === 'privacy') {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} onNavigate={handleNavigate} />
         <main>
           <PrivacyPolicy onBack={handleBack} />
         </main>
-        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} onNavigate={handleNavigate} />
       </div>
     );
   }
@@ -193,29 +211,55 @@ export default function App() {
   if (currentView === 'terms') {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} onNavigate={handleNavigate} />
         <main>
           <TermsConditions onBack={handleBack} />
         </main>
-        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} onNavigate={handleNavigate} />
+      </div>
+    );
+  }
+
+  if (currentView === 'about') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} onNavigate={handleNavigate} />
+        <main>
+          <AboutPage onBack={handleBack} />
+        </main>
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} onNavigate={handleNavigate} />
+      </div>
+    );
+  }
+
+  if (currentView === 'listings') {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} onNavigate={handleNavigate} />
+        <main>
+          <ListingsPage onBack={handleBack} onPropertyClick={handlePropertyClick} />
+        </main>
+        <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} onNavigate={handleNavigate} />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} />
+      <Header onAccountClick={handleAccountClick} isAuthenticated={!!session} onNavigate={handleNavigate} />
       <main>
         <Hero />
-        <About />
+        <Listings
+          onPropertyClick={handlePropertyClick}
+          title="Featured Listings"
+          subtitle="Select a category to preview up to six available properties."
+          limit={6}
+          sectionId="featured"
+        />
         <Services onServiceClick={handleServiceClick} />
-        {session && (
-          <UserDashboard session={session} embedded />
-        )}
-        <Listings onPropertyClick={handlePropertyClick} />
         <Contact />
       </main>
-      <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} />
+      <Footer onLegalNavigate={handleLegalNavigate} onSectionNavigate={handleSectionNavigate} onNavigate={handleNavigate} />
       <AuthModal
         open={authModalOpen}
         onClose={() => setAuthModalOpen(false)}

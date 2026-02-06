@@ -4,16 +4,17 @@ import logo from '@/assets/letifi-logo.png';
 interface FooterProps {
   onLegalNavigate: (target: 'privacy' | 'terms') => void;
   onSectionNavigate: (sectionId: string) => void;
+  onNavigate?: (target: 'home' | 'about' | 'services' | 'listings' | 'contact') => void;
 }
 
-export function Footer({ onLegalNavigate, onSectionNavigate }: FooterProps) {
+export function Footer({ onLegalNavigate, onSectionNavigate, onNavigate }: FooterProps) {
   const quickLinks = [
-    { label: 'Home', id: 'home' },
-    { label: 'About', id: 'about' },
-    { label: 'Services', id: 'services' },
-    { label: 'Listings', id: 'listings' },
-    { label: 'Contact', id: 'contact' },
-  ];
+    { label: 'Home', id: 'home', type: 'section' },
+    { label: 'About', id: 'about', type: 'page' },
+    { label: 'Services', id: 'services', type: 'section' },
+    { label: 'Listings', id: 'listings', type: 'page' },
+    { label: 'Contact', id: 'contact', type: 'section' },
+  ] as const;
 
   const services = [
     'Property Sales',
@@ -92,7 +93,13 @@ export function Footer({ onLegalNavigate, onSectionNavigate }: FooterProps) {
                 <li key={link.id}>
                   <button
                     type="button"
-                    onClick={() => onSectionNavigate(link.id)}
+                    onClick={() => {
+                      if (link.type === 'page') {
+                        onNavigate?.(link.id);
+                      } else {
+                        onSectionNavigate(link.id);
+                      }
+                    }}
                     className="text-foreground/70 hover:text-primary transition-colors duration-200"
                   >
                     {link.label}

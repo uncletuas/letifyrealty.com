@@ -38,7 +38,11 @@ export function AdminLogin({ onBack, onAuthenticated }: AdminLoginProps) {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      if (signInError.message.toLowerCase().includes('email not confirmed')) {
+        setError('Email confirmation is still enabled in Supabase. Disable "Confirm email" in Auth settings to allow admin login without verification.');
+      } else {
+        setError(signInError.message);
+      }
     } else {
       onAuthenticated();
     }
