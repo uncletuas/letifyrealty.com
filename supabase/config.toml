@@ -1,3 +1,4 @@
 [functions]
   [functions.server]
   entrypoint = "functions/server/index.ts"
+  verify_jwt = false
