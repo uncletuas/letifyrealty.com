@@ -6,6 +6,7 @@ import * as kv from "./kv_store.tsx";
 
 const app = new Hono();
 const api = new Hono();
+const LEGACY_PREFIX = "/make-server-ef402f1d";
 const ADMIN_EMAILS = new Set([
   "tuasiking@gmail.com",
   "tuamenebestgod@gmail.com",
@@ -1196,6 +1197,13 @@ api.get("/admin/users", async (c) => {
 });
 
 app.route("/", api);
-app.route("/make-server-ef402f1d", api);
+app.route(LEGACY_PREFIX, api);
+
+// Fallback: explicitly forward legacy-prefixed requests to the new router.
+app.all(`${LEGACY_PREFIX}/*`, (c) => {
+  const url = new URL(c.req.url);
+  url.pathname = url.pathname.replace(LEGACY_PREFIX, "") || "/";
+  return api.fetch(new Request(url, c.req.raw));
+});
 
 Deno.serve(app.fetch);
