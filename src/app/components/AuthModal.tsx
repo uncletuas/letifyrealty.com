@@ -74,7 +74,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
         } else {
           if (data.session?.access_token) {
             await fetch(
-              `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/profiles`,
+              `https://${projectId}.supabase.co/functions/v1/server/profiles`,
               {
                 method: 'POST',
                 headers: {

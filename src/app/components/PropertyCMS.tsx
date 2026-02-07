@@ -40,7 +40,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
   const fetchProperties = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/properties`,
+        `https://${projectId}.supabase.co/functions/v1/server/properties`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken || publicAnonKey}`,
@@ -65,8 +65,8 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
 
     try {
       const url = editingProperty.id
-        ? `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/properties/${editingProperty.id}`
-        : `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/properties`;
+        ? `https://${projectId}.supabase.co/functions/v1/server/properties/${editingProperty.id}`
+        : `https://${projectId}.supabase.co/functions/v1/server/properties`;
 
       const method = editingProperty.id ? 'PUT' : 'POST';
 
@@ -99,7 +99,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/properties/${id}`,
+        `https://${projectId}.supabase.co/functions/v1/server/properties/${id}`,
         {
           method: 'DELETE',
           headers: {

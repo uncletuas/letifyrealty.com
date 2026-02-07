@@ -20,7 +20,7 @@ export function Contact() {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/contact`,
+        `https://${projectId}.supabase.co/functions/v1/server/contact`,
         {
           method: 'POST',
           headers: {

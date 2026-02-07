@@ -143,7 +143,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchContactInquiries = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/contact/all`,
+        `https://${projectId}.supabase.co/functions/v1/server/contact/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -158,7 +158,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchPropertyInquiries = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/property-inquiries/all`,
+        `https://${projectId}.supabase.co/functions/v1/server/property-inquiries/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -173,7 +173,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchServiceRequests = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/requests/all`,
+        `https://${projectId}.supabase.co/functions/v1/server/requests/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -188,7 +188,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchInspections = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/inspections/all`,
+        `https://${projectId}.supabase.co/functions/v1/server/inspections/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -203,7 +203,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchConsultations = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/consultations/all`,
+        `https://${projectId}.supabase.co/functions/v1/server/consultations/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -218,7 +218,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchMessages = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/messages`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/messages`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -233,7 +233,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchNotifications = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/notifications`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/notifications`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -248,7 +248,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchMailingLists = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/mailing-lists`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -263,7 +263,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
   const fetchUsers = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/users`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/users`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       const data = await response.json();
@@ -328,7 +328,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     if (!update) return;
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/inspections/${id}`,
+        `https://${projectId}.supabase.co/functions/v1/server/inspections/${id}`,
         {
           method: 'PUT',
           headers: {
@@ -352,7 +352,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     if (!update) return;
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/consultations/${id}`,
+        `https://${projectId}.supabase.co/functions/v1/server/consultations/${id}`,
         {
           method: 'PUT',
           headers: {
@@ -403,7 +403,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     setMessageStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/messages`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/messages`,
         {
           method: 'POST',
           headers: {
@@ -441,7 +441,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     setMailingStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/mailing-lists`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists`,
         {
           method: 'POST',
           headers: {
@@ -471,7 +471,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     setMailingStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/admin/mailing-lists/${mailingSend.listId}/send`,
+        `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists/${mailingSend.listId}/send`,
         {
           method: 'POST',
           headers: {

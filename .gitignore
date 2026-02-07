@@ -33,6 +33,8 @@ dist-ssr
 .env.production.local
 .env.local
 .vercel
+.vercel_cli
+.vercel_cli/
 supabase/.temp
 supabase/functions/server/supabase_windows_amd64
 supabase/functions/server/supabase_windows_amd64/
