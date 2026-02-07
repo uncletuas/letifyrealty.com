@@ -5,6 +5,7 @@ import { X, MapPin, Phone, Mail, MessageCircle, ArrowLeft, Home, Check } from 'l
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { fetchJson } from '../../../utils/api';
 import { supabase } from '../../../utils/supabase/client';
+import { defaultProperties } from '../data/default-properties';
 
 interface Property {
   id: string;
@@ -116,7 +117,12 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
       if (result.ok && result.data?.property) {
         setProperty(result.data.property);
       } else {
-        console.error('Error fetching property:', result.data?.error || result.errorText);
+        const fallback = defaultProperties.find((item) => item.id === propertyId);
+        if (fallback) {
+          setProperty(fallback);
+        } else {
+          console.error('Error fetching property:', result.data?.error || result.errorText);
+        }
       }
     } catch (error) {
       console.error('Error fetching property:', error);

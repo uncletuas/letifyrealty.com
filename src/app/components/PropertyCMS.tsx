@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { X, Plus, Edit, Trash2, Save } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
 import { fetchJson } from '../../../utils/api';
+import { defaultProperties } from '../data/default-properties';
 
 interface Property {
   id: string;
@@ -52,6 +53,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
         setProperties(result.data.properties);
       } else if (!result.ok) {
         console.error('Error fetching properties:', result.data?.error || result.errorText);
+        setProperties(defaultProperties);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
