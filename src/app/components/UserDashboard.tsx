@@ -105,7 +105,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const fetchProfile = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/profiles/me`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/profiles/me`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -134,7 +134,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const fetchMessages = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/messages`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/messages`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -153,7 +153,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const fetchRequests = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/requests/me`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/requests/me`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -172,7 +172,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
   const fetchNotifications = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/notifications`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/notifications`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -212,7 +212,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     setProfileError(null);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/profiles`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/profiles`,
         {
           method: 'POST',
           headers: {
@@ -254,7 +254,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     setRequestError(null);
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/requests`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/requests`,
         {
           method: 'POST',
           headers: {
@@ -294,7 +294,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     setMessageStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/messages`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/messages`,
         {
           method: 'POST',
           headers: {

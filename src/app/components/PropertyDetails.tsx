@@ -104,7 +104,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
   const fetchProperty = async () => {
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/properties/${propertyId}`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/properties/${propertyId}`,
         {
           headers: {
             'Authorization': `Bearer ${publicAnonKey}`,
@@ -133,7 +133,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/property-inquiries`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/property-inquiries`,
         {
           method: 'POST',
           headers: {
@@ -221,7 +221,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/property-inquiries`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/property-inquiries`,
         {
           method: 'POST',
           headers: {
@@ -242,7 +242,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
       if (response.ok && data.success) {
         await fetch(
-          `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/reservations`,
+          `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/reservations`,
           {
             method: 'POST',
             headers: {
@@ -269,7 +269,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
         setReservationStatus('success');
         if (session?.access_token) {
           await fetch(
-            `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/requests`,
+            `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/requests`,
             {
               method: 'POST',
               headers: {
@@ -307,7 +307,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     setInspectionStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/inspections`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/inspections`,
         {
           method: 'POST',
           headers: {
@@ -347,7 +347,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     setConsultationStatus('sending');
     try {
       const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-ef402f1d/consultations`,
+        `https://${projectId}.supabase.co/functions/v1/server/make-server-ef402f1d/consultations`,
         {
           method: 'POST',
           headers: {
