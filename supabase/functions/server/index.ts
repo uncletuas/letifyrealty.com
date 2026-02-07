@@ -5,6 +5,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2.49.8";
 import * as kv from "./kv_store.tsx";
 
 const app = new Hono();
+const api = new Hono();
 const ADMIN_EMAILS = new Set([
   "tuasiking@gmail.com",
   "tuamenebestgod@gmail.com",
@@ -133,12 +134,12 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
 }
 
 // Health check endpoint
-app.get("/make-server-ef402f1d/health", (c) => {
+api.get("/health", (c) => {
   return c.json({ status: "ok" });
 });
 
 // Contact Inquiries Routes
-app.post("/make-server-ef402f1d/contact", async (c) => {
+api.post("/contact", async (c) => {
   try {
     const body = await c.req.json();
     const { name, email, phone, message } = body;
@@ -187,7 +188,7 @@ app.post("/make-server-ef402f1d/contact", async (c) => {
 });
 
 // Get all contact inquiries
-app.get("/make-server-ef402f1d/contact/all", async (c) => {
+api.get("/contact/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -200,7 +201,7 @@ app.get("/make-server-ef402f1d/contact/all", async (c) => {
 });
 
 // Property Routes
-app.post("/make-server-ef402f1d/properties", async (c) => {
+api.post("/properties", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -240,7 +241,7 @@ app.post("/make-server-ef402f1d/properties", async (c) => {
 });
 
 // Get all properties with optional filtering
-app.get("/make-server-ef402f1d/properties", async (c) => {
+api.get("/properties", async (c) => {
   try {
     const type = c.req.query('type');
     const search = c.req.query('search');
@@ -283,7 +284,7 @@ app.get("/make-server-ef402f1d/properties", async (c) => {
 });
 
 // Get single property by ID
-app.get("/make-server-ef402f1d/properties/:id", async (c) => {
+api.get("/properties/:id", async (c) => {
   try {
     const id = c.req.param('id');
     const property = await kv.get(id);
@@ -300,7 +301,7 @@ app.get("/make-server-ef402f1d/properties/:id", async (c) => {
 });
 
 // Update property
-app.put("/make-server-ef402f1d/properties/:id", async (c) => {
+api.put("/properties/:id", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -329,7 +330,7 @@ app.put("/make-server-ef402f1d/properties/:id", async (c) => {
 });
 
 // Delete property
-app.delete("/make-server-ef402f1d/properties/:id", async (c) => {
+api.delete("/properties/:id", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -345,7 +346,7 @@ app.delete("/make-server-ef402f1d/properties/:id", async (c) => {
 });
 
 // Property Inquiry Routes
-app.post("/make-server-ef402f1d/property-inquiries", async (c) => {
+api.post("/property-inquiries", async (c) => {
   try {
     const body = await c.req.json();
     const { propertyId, name, email, phone, message } = body;
@@ -408,7 +409,7 @@ app.post("/make-server-ef402f1d/property-inquiries", async (c) => {
 });
 
 // Get all property inquiries (admin only)
-app.get("/make-server-ef402f1d/property-inquiries/all", async (c) => {
+api.get("/property-inquiries/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -421,7 +422,7 @@ app.get("/make-server-ef402f1d/property-inquiries/all", async (c) => {
 });
 
 // User profile routes
-app.get("/make-server-ef402f1d/profiles/me", async (c) => {
+api.get("/profiles/me", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -433,7 +434,7 @@ app.get("/make-server-ef402f1d/profiles/me", async (c) => {
   }
 });
 
-app.post("/make-server-ef402f1d/profiles", async (c) => {
+api.post("/profiles", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -481,7 +482,7 @@ app.post("/make-server-ef402f1d/profiles", async (c) => {
 });
 
 // Service requests / purchases
-app.post("/make-server-ef402f1d/requests", async (c) => {
+api.post("/requests", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -551,7 +552,7 @@ app.post("/make-server-ef402f1d/requests", async (c) => {
 });
 
 // Reservation requests
-app.post("/make-server-ef402f1d/reservations", async (c) => {
+api.post("/reservations", async (c) => {
   try {
     const body = await c.req.json();
     const {
@@ -644,7 +645,7 @@ app.post("/make-server-ef402f1d/reservations", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/reservations/all", async (c) => {
+api.get("/reservations/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -657,7 +658,7 @@ app.get("/make-server-ef402f1d/reservations/all", async (c) => {
 });
 
 // Inspection booking
-app.post("/make-server-ef402f1d/inspections", async (c) => {
+api.post("/inspections", async (c) => {
   try {
     const body = await c.req.json();
     const {
@@ -737,7 +738,7 @@ app.post("/make-server-ef402f1d/inspections", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/inspections/all", async (c) => {
+api.get("/inspections/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -749,7 +750,7 @@ app.get("/make-server-ef402f1d/inspections/all", async (c) => {
   }
 });
 
-app.put("/make-server-ef402f1d/inspections/:id", async (c) => {
+api.put("/inspections/:id", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -791,7 +792,7 @@ app.put("/make-server-ef402f1d/inspections/:id", async (c) => {
 });
 
 // Consultation requests
-app.post("/make-server-ef402f1d/consultations", async (c) => {
+api.post("/consultations", async (c) => {
   try {
     const body = await c.req.json();
     const {
@@ -872,7 +873,7 @@ app.post("/make-server-ef402f1d/consultations", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/consultations/all", async (c) => {
+api.get("/consultations/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -884,7 +885,7 @@ app.get("/make-server-ef402f1d/consultations/all", async (c) => {
   }
 });
 
-app.put("/make-server-ef402f1d/consultations/:id", async (c) => {
+api.put("/consultations/:id", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -925,7 +926,7 @@ app.put("/make-server-ef402f1d/consultations/:id", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/requests/me", async (c) => {
+api.get("/requests/me", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -942,7 +943,7 @@ app.get("/make-server-ef402f1d/requests/me", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/requests/all", async (c) => {
+api.get("/requests/all", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -955,7 +956,7 @@ app.get("/make-server-ef402f1d/requests/all", async (c) => {
 });
 
 // Messaging routes
-app.post("/make-server-ef402f1d/messages", async (c) => {
+api.post("/messages", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -993,7 +994,7 @@ app.post("/make-server-ef402f1d/messages", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/messages", async (c) => {
+api.get("/messages", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -1006,7 +1007,7 @@ app.get("/make-server-ef402f1d/messages", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/admin/messages", async (c) => {
+api.get("/admin/messages", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1018,7 +1019,7 @@ app.get("/make-server-ef402f1d/admin/messages", async (c) => {
   }
 });
 
-app.post("/make-server-ef402f1d/admin/messages", async (c) => {
+api.post("/admin/messages", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1059,7 +1060,7 @@ app.post("/make-server-ef402f1d/admin/messages", async (c) => {
 });
 
 // Notifications
-app.get("/make-server-ef402f1d/notifications", async (c) => {
+api.get("/notifications", async (c) => {
   try {
     const { user, errorResponse } = await requireAuth(c);
     if (errorResponse) return errorResponse;
@@ -1071,7 +1072,7 @@ app.get("/make-server-ef402f1d/notifications", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/admin/notifications", async (c) => {
+api.get("/admin/notifications", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1084,7 +1085,7 @@ app.get("/make-server-ef402f1d/admin/notifications", async (c) => {
 });
 
 // Mailing list management
-app.post("/make-server-ef402f1d/admin/mailing-lists", async (c) => {
+api.post("/admin/mailing-lists", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1108,7 +1109,7 @@ app.post("/make-server-ef402f1d/admin/mailing-lists", async (c) => {
   }
 });
 
-app.get("/make-server-ef402f1d/admin/mailing-lists", async (c) => {
+api.get("/admin/mailing-lists", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1120,7 +1121,7 @@ app.get("/make-server-ef402f1d/admin/mailing-lists", async (c) => {
   }
 });
 
-app.post("/make-server-ef402f1d/admin/mailing-lists/:id/send", async (c) => {
+api.post("/admin/mailing-lists/:id/send", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1174,7 +1175,7 @@ app.post("/make-server-ef402f1d/admin/mailing-lists/:id/send", async (c) => {
 });
 
 // Admin: list users for messaging
-app.get("/make-server-ef402f1d/admin/users", async (c) => {
+api.get("/admin/users", async (c) => {
   try {
     const { errorResponse } = await requireAdmin(c);
     if (errorResponse) return errorResponse;
@@ -1193,5 +1194,8 @@ app.get("/make-server-ef402f1d/admin/users", async (c) => {
     return c.json({ error: 'Failed to fetch users' }, 500);
   }
 });
+
+app.route("/", api);
+app.route("/make-server-ef402f1d", api);
 
 Deno.serve(app.fetch);
