@@ -38,3 +38,11 @@ supabase/functions/server/supabase_windows_amd64
 supabase/functions/server/supabase_windows_amd64/
 .vercel
 .env*.local
+.git_backup
+.git_backup/
+.git_denied
+.git_denied/
+.git_denied2
+.git_denied2/
+.git_work
+.git_work/
