@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../../utils/supabase/client';
 import { projectId } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 interface UserDashboardProps {
   session: Session;
@@ -104,7 +105,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
 
   const fetchProfile = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ profile?: any; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/profiles/me`,
         {
           headers: {
@@ -112,19 +113,19 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           },
         }
       );
-
-      const data = await response.json();
-      if (response.ok && data.profile) {
+      if (result.ok && result.data?.profile) {
         setProfile({
-          fullName: data.profile.fullName || session.user.user_metadata?.full_name || '',
-          gender: data.profile.gender || session.user.user_metadata?.gender || '',
-          age: data.profile.age ?? session.user.user_metadata?.age ?? '',
-          address: data.profile.address || session.user.user_metadata?.address || '',
-          phone: data.profile.phone || '',
-          location: data.profile.location || '',
-          avatarUrl: data.profile.avatarUrl || session.user.user_metadata?.avatar_url || '',
-          interests: data.profile.interests || { propertyTypes: [], serviceTypes: [] },
+          fullName: result.data.profile.fullName || session.user.user_metadata?.full_name || '',
+          gender: result.data.profile.gender || session.user.user_metadata?.gender || '',
+          age: result.data.profile.age ?? session.user.user_metadata?.age ?? '',
+          address: result.data.profile.address || session.user.user_metadata?.address || '',
+          phone: result.data.profile.phone || '',
+          location: result.data.profile.location || '',
+          avatarUrl: result.data.profile.avatarUrl || session.user.user_metadata?.avatar_url || '',
+          interests: result.data.profile.interests || { propertyTypes: [], serviceTypes: [] },
         });
+      } else if (!result.ok) {
+        console.error('Error fetching profile:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -133,7 +134,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ messages?: MessageItem[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/messages`,
         {
           headers: {
@@ -141,9 +142,10 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           },
         }
       );
-      const data = await response.json();
-      if (response.ok && data.messages) {
-        setMessages(data.messages);
+      if (result.ok && result.data?.messages) {
+        setMessages(result.data.messages);
+      } else if (!result.ok) {
+        console.error('Error fetching messages:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -152,7 +154,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
 
   const fetchRequests = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ requests?: RequestItem[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/requests/me`,
         {
           headers: {
@@ -160,9 +162,10 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           },
         }
       );
-      const data = await response.json();
-      if (response.ok && data.requests) {
-        setRequests(data.requests);
+      if (result.ok && result.data?.requests) {
+        setRequests(result.data.requests);
+      } else if (!result.ok) {
+        console.error('Error fetching requests:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -171,7 +174,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ notifications?: NotificationItem[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/notifications`,
         {
           headers: {
@@ -179,9 +182,10 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           },
         }
       );
-      const data = await response.json();
-      if (response.ok && data.notifications) {
-        setNotifications(data.notifications);
+      if (result.ok && result.data?.notifications) {
+        setNotifications(result.data.notifications);
+      } else if (!result.ok) {
+        console.error('Error fetching notifications:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -211,7 +215,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     setProfileStatus('saving');
     setProfileError(null);
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/profiles`,
         {
           method: 'POST',
@@ -222,13 +226,12 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           body: JSON.stringify({ ...profile, age: ageValue }),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setProfileStatus('saved');
         setIsEditingProfile(false);
         setTimeout(() => setProfileStatus('idle'), 3000);
       } else {
-        setProfileError(data.error || 'Could not save profile.');
+        setProfileError(result.data?.error || result.errorText || 'Could not save profile.');
         setProfileStatus('error');
       }
     } catch (error) {
@@ -253,7 +256,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     setRequestStatus('sending');
     setRequestError(null);
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/requests`,
         {
           method: 'POST',
@@ -264,8 +267,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           body: JSON.stringify(requestData),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setRequestStatus('sent');
         fetchRequests();
         fetchNotifications();
@@ -278,7 +280,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
         });
         setTimeout(() => setRequestStatus('idle'), 3000);
       } else {
-        setRequestError(data.error || 'Request failed.');
+        setRequestError(result.data?.error || result.errorText || 'Request failed.');
         setRequestStatus('error');
       }
     } catch (error) {
@@ -293,7 +295,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
     if (!messageContent.trim()) return;
     setMessageStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/messages`,
         {
           method: 'POST',
@@ -304,8 +306,7 @@ export function UserDashboard({ session, onClose, embedded = false }: UserDashbo
           body: JSON.stringify({ content: messageContent }),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setMessageStatus('sent');
         setMessageContent('');
         fetchMessages();

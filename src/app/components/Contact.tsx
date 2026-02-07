@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export function Contact() {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/contact`,
         {
           method: 'POST',
@@ -30,15 +31,12 @@ export function Contact() {
           body: JSON.stringify(formData),
         }
       );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', phone: '', message: '' });
         setTimeout(() => setSubmitStatus('idle'), 5000);
       } else {
-        console.error('Error submitting contact form:', data.error);
+        console.error('Error submitting contact form:', result.data?.error || result.errorText);
         setSubmitStatus('error');
       }
     } catch (error) {

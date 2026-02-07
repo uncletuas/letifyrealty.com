@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight, Search } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 interface Property {
   id: string;
@@ -53,7 +54,7 @@ export function Listings({
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ properties?: Property[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/properties`,
         {
           headers: {
@@ -61,14 +62,11 @@ export function Listings({
           },
         }
       );
-
-      const data = await response.json();
-
-      if (response.ok && data.properties) {
-        setProperties(data.properties);
-        setFilteredProperties(data.properties);
+      if (result.ok && result.data?.properties) {
+        setProperties(result.data.properties);
+        setFilteredProperties(result.data.properties);
       } else {
-        console.error('Error fetching properties:', data.error);
+        console.error('Error fetching properties:', result.data?.error || result.errorText);
         // Use default properties if backend is empty
         setProperties(defaultProperties);
         setFilteredProperties(defaultProperties);

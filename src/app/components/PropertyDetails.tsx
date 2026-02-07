@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { motion } from 'motion/react';
 import { X, MapPin, Phone, Mail, MessageCircle, ArrowLeft, Home, Check } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 import { supabase } from '../../../utils/supabase/client';
 
 interface Property {
@@ -103,7 +104,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
 
   const fetchProperty = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ property?: Property; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/properties/${propertyId}`,
         {
           headers: {
@@ -112,12 +113,10 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
         }
       );
 
-      const data = await response.json();
-
-      if (response.ok && data.property) {
-        setProperty(data.property);
+      if (result.ok && result.data?.property) {
+        setProperty(result.data.property);
       } else {
-        console.error('Error fetching property:', data.error);
+        console.error('Error fetching property:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching property:', error);
@@ -132,7 +131,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     setSubmitStatus('idle');
 
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/property-inquiries`,
         {
           method: 'POST',
@@ -147,14 +146,12 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
         }
       );
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setSubmitStatus('success');
         setFormData({ name: '', email: '', phone: '', message: '' });
         setTimeout(() => setSubmitStatus('idle'), 5000);
       } else {
-        console.error('Error submitting inquiry:', data.error);
+        console.error('Error submitting inquiry:', result.data?.error || result.errorText);
         setSubmitStatus('error');
       }
     } catch (error) {
@@ -220,7 +217,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     }
 
     try {
-      const response = await fetch(
+      const inquiryResult = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/property-inquiries`,
         {
           method: 'POST',
@@ -238,10 +235,8 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
         }
       );
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        await fetch(
+      if (inquiryResult.ok && inquiryResult.data?.success) {
+        const reservationResult = await fetchJson<{ success?: boolean; error?: string }>(
           `https://${projectId}.supabase.co/functions/v1/server/reservations`,
           {
             method: 'POST',
@@ -266,9 +261,12 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
             }),
           }
         );
+        if (!reservationResult.ok) {
+          console.error('Error submitting reservation:', reservationResult.data?.error || reservationResult.errorText);
+        }
         setReservationStatus('success');
         if (session?.access_token) {
-          await fetch(
+          const requestResult = await fetchJson<{ success?: boolean; error?: string }>(
             `https://${projectId}.supabase.co/functions/v1/server/requests`,
             {
               method: 'POST',
@@ -286,11 +284,14 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
               }),
             }
           );
+          if (!requestResult.ok) {
+            console.error('Error submitting purchase request:', requestResult.data?.error || requestResult.errorText);
+          }
         }
         setReservationData(reservationDefaults);
         setTimeout(() => setReservationStatus('idle'), 5000);
       } else {
-        console.error('Error submitting reservation:', data.error);
+        console.error('Error submitting reservation:', inquiryResult.data?.error || inquiryResult.errorText);
         setReservationStatus('error');
       }
     } catch (error) {
@@ -306,7 +307,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     if (!property) return;
     setInspectionStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/inspections`,
         {
           method: 'POST',
@@ -327,12 +328,12 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
           }),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setInspectionStatus('sent');
         setInspectionData(inspectionDefaults);
         setTimeout(() => setInspectionStatus('idle'), 4000);
       } else {
+        console.error('Error booking inspection:', result.data?.error || result.errorText);
         setInspectionStatus('error');
       }
     } catch (error) {
@@ -346,7 +347,7 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
     if (!property) return;
     setConsultationStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/consultations`,
         {
           method: 'POST',
@@ -367,12 +368,12 @@ export function PropertyDetails({ propertyId, onClose }: PropertyDetailsProps) {
           }),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setConsultationStatus('sent');
         setConsultationData(consultationDefaults);
         setTimeout(() => setConsultationStatus('idle'), 4000);
       } else {
+        console.error('Error submitting consultation:', result.data?.error || result.errorText);
         setConsultationStatus('error');
       }
     } catch (error) {

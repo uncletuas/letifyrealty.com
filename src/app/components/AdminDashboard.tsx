@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Bell, Download, Mail, MessageCircle, Send, Settings } from 'lucide-react';
 import { supabase } from '../../../utils/supabase/client';
 import { projectId } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -142,13 +143,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchContactInquiries = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ inquiries?: ContactInquiry[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/contact/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.inquiries) {
-        setContactInquiries(data.inquiries);
+      if (result.ok && result.data?.inquiries) {
+        setContactInquiries(result.data.inquiries);
+      } else if (!result.ok) {
+        console.error('Error fetching contact inquiries:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching contact inquiries:', error);
@@ -157,13 +159,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchPropertyInquiries = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ inquiries?: PropertyInquiry[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/property-inquiries/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.inquiries) {
-        setPropertyInquiries(data.inquiries);
+      if (result.ok && result.data?.inquiries) {
+        setPropertyInquiries(result.data.inquiries);
+      } else if (!result.ok) {
+        console.error('Error fetching property inquiries:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching property inquiries:', error);
@@ -172,13 +175,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchServiceRequests = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ requests?: ServiceRequest[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/requests/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.requests) {
-        setServiceRequests(data.requests);
+      if (result.ok && result.data?.requests) {
+        setServiceRequests(result.data.requests);
+      } else if (!result.ok) {
+        console.error('Error fetching requests:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -187,13 +191,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchInspections = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ inspections?: InspectionRequest[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/inspections/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.inspections) {
-        setInspections(data.inspections);
+      if (result.ok && result.data?.inspections) {
+        setInspections(result.data.inspections);
+      } else if (!result.ok) {
+        console.error('Error fetching inspections:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching inspections:', error);
@@ -202,13 +207,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchConsultations = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ consultations?: ConsultationRequest[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/consultations/all`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.consultations) {
-        setConsultations(data.consultations);
+      if (result.ok && result.data?.consultations) {
+        setConsultations(result.data.consultations);
+      } else if (!result.ok) {
+        console.error('Error fetching consultations:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching consultations:', error);
@@ -217,13 +223,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ messages?: AdminMessage[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/messages`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.messages) {
-        setMessages(data.messages);
+      if (result.ok && result.data?.messages) {
+        setMessages(result.data.messages);
+      } else if (!result.ok) {
+        console.error('Error fetching messages:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -232,13 +239,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ notifications?: NotificationItem[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/notifications`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.notifications) {
-        setNotifications(data.notifications);
+      if (result.ok && result.data?.notifications) {
+        setNotifications(result.data.notifications);
+      } else if (!result.ok) {
+        console.error('Error fetching notifications:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -247,13 +255,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchMailingLists = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ lists?: MailingList[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.lists) {
-        setMailingLists(data.lists);
+      if (result.ok && result.data?.lists) {
+        setMailingLists(result.data.lists);
+      } else if (!result.ok) {
+        console.error('Error fetching mailing lists:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching mailing lists:', error);
@@ -262,13 +271,14 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ users?: UserItem[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/users`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      const data = await response.json();
-      if (response.ok && data.users) {
-        setUsers(data.users);
+      if (result.ok && result.data?.users) {
+        setUsers(result.data.users);
+      } else if (!result.ok) {
+        console.error('Error fetching users:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -327,7 +337,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     const update = inspectionUpdates[id];
     if (!update) return;
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/inspections/${id}`,
         {
           method: 'PUT',
@@ -338,9 +348,10 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
           body: JSON.stringify(update),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         fetchInspections();
+      } else if (!result.ok) {
+        console.error('Error updating inspection:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error updating inspection:', error);
@@ -351,7 +362,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     const update = consultationUpdates[id];
     if (!update) return;
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/consultations/${id}`,
         {
           method: 'PUT',
@@ -362,9 +373,10 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
           body: JSON.stringify(update),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         fetchConsultations();
+      } else if (!result.ok) {
+        console.error('Error updating consultation:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error updating consultation:', error);
@@ -402,7 +414,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     if (!messageData.userId || !messageData.content) return;
     setMessageStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/messages`,
         {
           method: 'POST',
@@ -413,8 +425,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
           body: JSON.stringify(messageData),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setMessageStatus('sent');
         setMessageData({ userId: '', email: '', content: '' });
         fetchMessages();
@@ -440,7 +451,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     if (!mailingForm.name || mailingForm.interests.length === 0) return;
     setMailingStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists`,
         {
           method: 'POST',
@@ -451,8 +462,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
           body: JSON.stringify(mailingForm),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setMailingForm({ name: '', category: 'property', interests: [] });
         fetchMailingLists();
         setMailingStatus('sent');
@@ -470,7 +480,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
     if (!mailingSend.listId || !mailingSend.subject || !mailingSend.body) return;
     setMailingStatus('sending');
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/admin/mailing-lists/${mailingSend.listId}/send`,
         {
           method: 'POST',
@@ -484,8 +494,7 @@ export function AdminDashboard({ onClose, accessToken, children }: AdminDashboar
           }),
         }
       );
-      const data = await response.json();
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         setMailingSend({ listId: '', subject: '', body: '' });
         setMailingStatus('sent');
         setTimeout(() => setMailingStatus('idle'), 2000);

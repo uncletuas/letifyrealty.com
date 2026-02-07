@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, Plus, Edit, Trash2, Save } from 'lucide-react';
 import { projectId, publicAnonKey } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 interface Property {
   id: string;
@@ -39,7 +40,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
 
   const fetchProperties = async () => {
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ properties?: Property[]; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/properties`,
         {
           headers: {
@@ -47,11 +48,10 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
           },
         }
       );
-
-      const data = await response.json();
-
-      if (response.ok && data.properties) {
-        setProperties(data.properties);
+      if (result.ok && result.data?.properties) {
+        setProperties(result.data.properties);
+      } else if (!result.ok) {
+        console.error('Error fetching properties:', result.data?.error || result.errorText);
       }
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -70,7 +70,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
 
       const method = editingProperty.id ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const result = await fetchJson<{ success?: boolean; error?: string }>(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -78,15 +78,12 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
         },
         body: JSON.stringify(editingProperty),
       });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         await fetchProperties();
         setIsFormOpen(false);
         setEditingProperty(null);
       } else {
-        alert('Error saving property: ' + (data.error || 'Unknown error'));
+        alert('Error saving property: ' + (result.data?.error || result.errorText || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error saving property:', error);
@@ -98,7 +95,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
     if (!confirm('Are you sure you want to delete this property?')) return;
 
     try {
-      const response = await fetch(
+      const result = await fetchJson<{ success?: boolean; error?: string }>(
         `https://${projectId}.supabase.co/functions/v1/server/properties/${id}`,
         {
           method: 'DELETE',
@@ -107,10 +104,7 @@ export function PropertyCMS({ onClose, accessToken, embedded = false }: Property
           },
         }
       );
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (result.ok && result.data?.success) {
         await fetchProperties();
       } else {
         alert('Error deleting property');

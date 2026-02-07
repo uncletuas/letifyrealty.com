@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { supabase } from '../../../utils/supabase/client';
 import { projectId } from '../../../utils/supabase/info';
+import { fetchJson } from '../../../utils/api';
 
 interface AuthModalProps {
   open: boolean;
@@ -73,7 +74,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           setError(signUpError.message);
         } else {
           if (data.session?.access_token) {
-            await fetch(
+            const result = await fetchJson<{ success?: boolean; error?: string }>(
               `https://${projectId}.supabase.co/functions/v1/server/profiles`,
               {
                 method: 'POST',
@@ -89,6 +90,9 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
                 }),
               }
             );
+            if (!result.ok) {
+              console.error('Error creating profile:', result.data?.error || result.errorText);
+            }
             await supabase.auth.signOut();
           }
           setSuccessMessage('Account created successfully! Please sign in with your email and password.');
